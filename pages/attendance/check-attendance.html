@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm Danh Buổi Học | Giáo Viên</title>
+    <link rel="stylesheet" href="../../css/components/attendance.css">
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Hệ Thống Quản Lý</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/pages/dashboard/teacher.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="/pages/schedule/teacher-schedule.html"><i class="fas fa-calendar"></i> Lịch Dạy</a></li>
+                    <li class="active"><a href="/pages/attendance/check-attendance.html"><i class="fas fa-check-circle"></i> Điểm Danh</a></li>
+                    <li><a href="/pages/payroll/teacher-payroll.html"><i class="fas fa-money-bill"></i> Thông Tin Công</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Điểm Danh Buổi Học</h1>
+                <div class="header-actions">
+                    <button class="btn-draft" id="saveDraft">
+                        <i class="fas fa-save"></i> Lưu nháp
+                    </button>
+                    <button class="btn-submit" id="submitAttendance">
+                        <i class="fas fa-paper-plane"></i> Gửi phê duyệt
+                    </button>
+                </div>
+            </header>
+
+            <div class="attendance-container">
+                <!-- Class Info Section -->
+                <div class="class-info-section">
+                    <div class="info-group">
+                        <label>Lớp học:</label>
+                        <select id="classSelect" required>
+                            <option value="">Chọn lớp học</option>
+                        </select>
+                    </div>
+                    <div class="info-group">
+                        <label>Buổi học:</label>
+                        <select id="lessonSelect" required>
+                            <option value="">Chọn buổi học</option>
+                        </select>
+                    </div>
+                    <div class="info-group">
+                        <label>Ngày:</label>
+                        <input type="date" id="lessonDate" required>
+                    </div>
+                    <div class="info-group">
+                        <label>Thời gian:</label>
+                        <input type="time" id="lessonTime" required>
+                    </div>
+                </div>
+
+                <!-- Attendance Form -->
+                <form id="attendanceForm" class="attendance-form">
+                    <div class="form-section">
+                        <h3>Thông Tin Buổi Học</h3>
+                        <div class="form-group">
+                            <label>Nội dung bài học:</label>
+                            <textarea id="lessonContent" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Bài tập về nhà:</label>
+                            <textarea id="homework" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Link Recording:</label>
+                            <div class="recording-upload">
+                                <input type="text" id="recordingLink" placeholder="Nhập link recording">
+                                <span>hoặc</span>
+                                <input type="file" id="recordingFile" accept="video/*">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Điểm Danh Học Sinh</h3>
+                        <div class="student-list" id="studentList">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Ghi Chú</h3>
+                        <div class="form-group">
+                            <textarea id="notes" rows="3" placeholder="Nhập ghi chú về buổi học nếu có..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h2>Xác nhận gửi điểm danh</h2>
+            <p>Bạn có chắc chắn muốn gửi điểm danh này để phê duyệt?</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelSubmit">Hủy</button>
+                <button class="btn-primary" id="confirmSubmit">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/components/attendance.js"></script>
+</body>
+</html> 

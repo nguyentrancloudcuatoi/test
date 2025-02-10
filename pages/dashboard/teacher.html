@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Giáo Viên</title>
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Hệ Thống Quản Lý</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="/pages/dashboard/teacher.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="/pages/schedule/teacher-schedule.html"><i class="fas fa-calendar"></i> Lịch Dạy</a></li>
+                    <li><a href="/pages/attendance/check-attendance.html"><i class="fas fa-check-circle"></i> Điểm Danh</a></li>
+                    <li><a href="/pages/payroll/teacher-payroll.html"><i class="fas fa-money-bill"></i> Thông Tin Công</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Tìm kiếm...">
+                </div>
+                <div class="header-right">
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <img src="../../assets/images/avatar.png" alt="Avatar">
+                        <span>Nguyễn Văn A</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon teaching">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Buổi Dạy</h3>
+                            <p class="stat-number">24</p>
+                            <p class="stat-desc">Tháng này</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon approved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Công Đã Duyệt</h3>
+                            <p class="stat-number">18</p>
+                            <p class="stat-desc">Cập nhật mới nhất</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Công Chờ Duyệt</h3>
+                            <p class="stat-number">6</p>
+                            <p class="stat-desc">Đang xử lý</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon schedule">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Lịch Trống</h3>
+                            <p class="stat-number">12</p>
+                            <p class="stat-desc">Slot khả dụng</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities & Notifications -->
+                <div class="dashboard-grid">
+                    <!-- Recent Activities -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Hoạt Động Gần Đây</h3>
+                            <a href="#" class="view-all">Xem tất cả</a>
+                        </div>
+                        <div class="activity-list">
+                            <!-- Activity items -->
+                        </div>
+                    </div>
+
+                    <!-- Important Notifications -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Thông Báo Quan Trọng</h3>
+                            <a href="#" class="view-all">Xem tất cả</a>
+                        </div>
+                        <div class="notification-list">
+                            <!-- Notification items -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../../js/components/dashboard.js"></script>
+</body>
+</html> 

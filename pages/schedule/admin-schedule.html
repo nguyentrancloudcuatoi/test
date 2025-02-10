@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Lịch Trống | Admin</title>
+    <link rel="stylesheet" href="../../css/components/admin-schedule.css">
+    <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+         <!-- Sidebar -->
+         <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="../../pages/dashboard/admin.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="../../pages/teacher/admin-teacher-management.html"><i class="fas fa-users"></i> Quản lý giáo viên</a></li>
+                    <li><a href="../../pages/class/admin-class-management.html"><i class="fas fa-graduation-cap"></i> Quản lý lớp học</a></li>
+                    <li><a href="../../pages/attendance/admin-attendance.html"><i class="fas fa-clock"></i> Duyệt điểm danh</a></li>
+                    <li  class="active"><a href="../../pages/schedule/admin-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch trống</a></li>
+                    <li><a href="../../pages/reports/admin-reports.html"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Quản Lý Lịch Trống Giáo Viên</h1>
+                <div class="header-actions">
+                    <button class="btn-export" id="exportData">
+                        <i class="fas fa-file-export"></i> Xuất Báo Cáo
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>Giáo viên:</label>
+                        <select id="teacherFilter">
+                            <option value="">Tất cả giáo viên</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Ngày:</label>
+                        <input type="date" id="dateFilter">
+                    </div>
+                    <div class="filter-group">
+                        <label>Khung giờ:</label>
+                        <select id="timeSlotFilter">
+                            <option value="">Tất cả khung giờ</option>
+                            <option value="morning">Sáng (7:00 - 12:00)</option>
+                            <option value="afternoon">Chiều (13:00 - 17:00)</option>
+                            <option value="evening">Tối (18:00 - 21:00)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Trạng thái:</label>
+                        <select id="statusFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="available">Có thể nhận lớp</option>
+                            <option value="outdated">Chưa cập nhật</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Chưa Cập Nhật</h3>
+                            <p class="stat-number" id="outdatedCount">8</p>
+                            <p class="stat-desc">Giáo viên</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Đã Cập Nhật</h3>
+                            <p class="stat-number" id="updatedCount">24</p>
+                            <p class="stat-desc">Giáo viên</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Slots Khả Dụng</h3>
+                            <p class="stat-number" id="availableSlots">156</p>
+                            <p class="stat-desc">Trong tuần này</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teacher Schedule List -->
+                <div class="schedule-list-container">
+                    <div class="list-header">
+                        <div class="header-cell">Giáo viên</div>
+                        <div class="header-cell">Cập nhật cuối</div>
+                        <div class="header-cell">Slots khả dụng</div>
+                        <div class="header-cell">Trạng thái</div>
+                        <div class="header-cell">Thao tác</div>
+                    </div>
+                    <div class="schedule-list" id="teacherScheduleList">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Schedule Detail Modal -->
+    <div class="modal" id="scheduleDetailModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Chi Tiết Lịch Trống</h2>
+            <div id="teacherScheduleDetail"></div>
+        </div>
+    </div>
+
+    <script src="../../js/components/admin-schedule.js"></script>
+</body>
+</html> 

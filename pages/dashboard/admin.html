@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin</title>
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
+    <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="../../pages/dashboard/admin.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="../../pages/teacher/admin-teacher-management.html"><i class="fas fa-users"></i> Quản lý giáo viên</a></li>
+                    <li><a href="../../pages/class/admin-class-management.html"><i class="fas fa-graduation-cap"></i> Quản lý lớp học</a></li>
+                    <li><a href="../../pages/attendance/admin-attendance.html"><i class="fas fa-clock"></i> Duyệt điểm danh</a></li>
+                    <li><a href="../../pages/schedule/admin-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch trống</a></li>
+                    <li><a href="../../pages/reports/admin-reports.html"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Tìm kiếm giáo viên, lớp học...">
+                </div>
+                <div class="header-right">
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">5</span>
+                    </div>
+                    <div class="user-profile">
+                        <img src="../../assets/images/admin-avatar.png" alt="Admin Avatar">
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon classes">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Lớp Đang Hoạt Động</h3>
+                            <p class="stat-number">45</p>
+                            <p class="stat-desc">Tăng 5% so với tháng trước</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Điểm Danh Chờ Duyệt</h3>
+                            <p class="stat-number">23</p>
+                            <p class="stat-desc">Cần xử lý</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>GV Chưa Cập Nhật Lịch</h3>
+                            <p class="stat-number">8</p>
+                            <p class="stat-desc">Cần nhắc nhở</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon teachers">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Tổng Giáo Viên</h3>
+                            <p class="stat-number">32</p>
+                            <p class="stat-desc">Đang hoạt động</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Thao Tác Nhanh</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn">
+                            <i class="fas fa-plus"></i>
+                            Thêm Lớp Mới
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Thêm Giáo Viên
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-check-double"></i>
+                            Duyệt Điểm Danh
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-file-export"></i>
+                            Xuất Báo Cáo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Pending Approvals -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Điểm Danh Chờ Duyệt</h3>
+                            <a href="#" class="view-all">Xem tất cả</a>
+                        </div>
+                        <div class="approval-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Teacher Schedule Updates -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Cập Nhật Lịch Giáo Viên</h3>
+                            <a href="#" class="view-all">Xem tất cả</a>
+                        </div>
+                        <div class="schedule-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="dashboard-card full-width">
+                    <div class="card-header">
+                        <h3>Hoạt Động Gần Đây</h3>
+                        <div class="date-filter">
+                            <select id="activityFilter">
+                                <option value="today">Hôm nay</option>
+                                <option value="week">Tuần này</option>
+                                <option value="month">Tháng này</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="activity-timeline">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../../js/components/data-manager.js" type="module"></script>
+    <script src="../../js/components/admin-dashboard.js" type="module"></script>
+</body>
+</html> 

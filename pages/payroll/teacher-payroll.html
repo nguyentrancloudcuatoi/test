@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Công & Lương | Giáo Viên</title>
+    <link rel="stylesheet" href="../../css/components/payroll.css">
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Hệ Thống Quản Lý</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/pages/dashboard/teacher.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="/pages/schedule/teacher-schedule.html"><i class="fas fa-calendar"></i> Lịch Dạy</a></li>
+                    <li><a href="/pages/attendance/check-attendance.html"><i class="fas fa-check-circle"></i> Điểm Danh</a></li>
+                    <li class="active"><a href="/pages/payroll/teacher-payroll.html"><i class="fas fa-money-bill"></i> Thông Tin Công</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Thông Báo Công & Lương</h1>
+                <div class="header-actions">
+                    <button class="btn-export" id="exportPayslip">
+                        <i class="fas fa-file-export"></i> Xuất Phiếu Lương
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <!-- Period Selection -->
+                <div class="period-selector">
+                    <button class="btn-prev"><i class="fas fa-chevron-left"></i></button>
+                    <h2 id="currentPeriod">Tháng 3/2024</h2>
+                    <button class="btn-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <div class="summary-card approved">
+                        <div class="card-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Công Đã Duyệt</h3>
+                            <p class="amount" id="approvedWorkload">48</p>
+                            <p class="desc">Giờ</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-card rejected">
+                        <div class="card-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Công Bị Từ Chối</h3>
+                            <p class="amount" id="rejectedWorkload">2</p>
+                            <p class="desc">Giờ</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-card salary">
+                        <div class="card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Tổng Lương</h3>
+                            <p class="amount" id="totalSalary">4,800,000</p>
+                            <p class="desc">VNĐ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Details -->
+                <div class="salary-details">
+                    <h3>Chi Tiết Lương</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="label">Rate/giờ:</span>
+                            <span class="value" id="hourlyRate">100,000 VNĐ</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Tổng giờ dạy:</span>
+                            <span class="value" id="totalHours">48 giờ</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Phụ cấp:</span>
+                            <span class="value" id="allowance">0 VNĐ</span>
+                        </div>
+                        <div class="detail-item total">
+                            <span class="label">Tổng cộng:</span>
+                            <span class="value" id="finalSalary">4,800,000 VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Updates -->
+                <div class="updates-section">
+                    <h3>Cập Nhật Gần Đây</h3>
+                    <div class="updates-list" id="updatesList">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="notificationToast">
+        <div class="toast-content">
+            <i class="fas fa-info-circle"></i>
+            <span id="toastMessage"></span>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <script src="../../js/components/payroll.js"></script>
+</body>
+</html> 

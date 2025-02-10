@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập | Hệ thống quản lý</title>
+    <link rel="stylesheet" href="../css/components/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="../image/logodangnhap.png" alt="Logo" class="logo">
+                <h1>Đăng nhập</h1>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Email/Số điện thoại</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember">
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="#" id="forgotPassword" class="forgot-link">Quên mật khẩu?</a>
+                </div>
+
+                <div id="errorMessage" class="error-message"></div>
+
+                <button type="submit" class="login-button">
+                    <span>Đăng nhập</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Modal Quên mật khẩu -->
+        <div id="forgotPasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Khôi phục mật khẩu</h2>
+                <form id="resetPasswordForm">
+                    <div class="form-group">
+                        <label>Email/Số điện thoại</label>
+                        <input type="text" id="resetEmail" required>
+                    </div>
+                    <button type="submit">Gửi mã xác nhận</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="../js/components/login.js"></script>
+</body>
+</html> 

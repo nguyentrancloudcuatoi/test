@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Lớp Học | Học Viên</title>
+    <link rel="stylesheet" href="../../css/components/student-class.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Thông Tin Lớp Học</h1>
+                <div class="class-selector">
+                    <select id="classSelect">
+                        <option value="math10a">Toán 10A - Thầy Nguyễn Văn A</option>
+                        <option value="physics10b">Vật Lý 10B - Cô Trần Thị B</option>
+                    </select>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-logout" onclick="window.location.href='../../pages/index.html'">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alerts Section -->
+            <div class="alerts-section" id="alertsSection">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <div class="content-container">
+                <!-- Class Information Card -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h2>Thông Tin Chung</h2>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Giáo viên:</label>
+                            <span id="teacherName">Thầy Nguyễn Văn A</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Ngày bắt đầu:</label>
+                            <span id="startDate">01/03/2024</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Tổng số buổi:</label>
+                            <span id="totalLessons">24 buổi</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Thời gian học:</label>
+                            <span id="scheduleTime">Thứ 2, 4, 6 - 18:00-19:30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Summary -->
+                <div class="progress-summary">
+                    <div class="progress-card">
+                        <div class="progress-icon completed">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Đã học</h3>
+                            <p class="progress-number" id="completedLessons">12</p>
+                            <p class="progress-desc">buổi</p>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-icon remaining">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Còn lại</h3>
+                            <p class="progress-number" id="remainingLessons">12</p>
+                            <p class="progress-desc">buổi</p>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-icon absent">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Vắng mặt</h3>
+                            <p class="progress-number" id="absentCount">2</p>
+                            <p class="progress-desc">buổi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Lesson Alert -->
+                <div class="next-lesson-alert" id="nextLessonAlert">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="alert-content">
+                        <h3>Buổi học tiếp theo</h3>
+                        <p id="nextLessonTime">Thứ 2, 20/03/2024 - 18:00</p>
+                    </div>
+                </div>
+
+                <!-- Lesson History -->
+                <div class="lesson-history">
+                    <div class="history-header">
+                        <h2>Lịch Sử Buổi Học</h2>
+                        <div class="history-filter">
+                            <select id="statusFilter">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="attended">Đã tham gia</option>
+                                <option value="absent">Vắng mặt</option>
+                                <option value="makeup">Học bù</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="history-list" id="lessonHistory">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/components/student-class.js"></script>
+</body>
+</html> 

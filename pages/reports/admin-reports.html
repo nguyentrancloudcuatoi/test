@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo & Thống Kê | Admin</title>
+    <link rel="stylesheet" href="../../css/components/reports.css">
+    <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
+    <link rel="stylesheet" href="../../css/components/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="../../pages/dashboard/admin.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="../../pages/teacher/admin-teacher-management.html"><i class="fas fa-users"></i> Quản lý giáo viên</a></li>
+                    <li><a href="../../pages/class/admin-class-management.html"><i class="fas fa-graduation-cap"></i> Quản lý lớp học</a></li>
+                    <li><a href="../../pages/attendance/admin-attendance.html"><i class="fas fa-clock"></i> Duyệt điểm danh</a></li>
+                    <li><a href="../../pages/schedule/admin-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch trống</a></li>
+                    <li class="active"><a href="../../pages/reports/admin-reports.html"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Báo Cáo & Thống Kê</h1>
+                <div class="header-actions">
+                    <button class="btn-export" id="exportToExcel">
+                        <i class="fas fa-file-excel"></i> Xuất Excel
+                    </button>
+                    <button class="btn-export" id="exportToSheets">
+                        <i class="fas fa-table"></i> Xuất Google Sheets
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <!-- Report Types -->
+                <div class="report-types">
+                    <button class="report-type active" data-type="attendance">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Điểm Danh</span>
+                    </button>
+                    <button class="report-type" data-type="workload">
+                        <i class="fas fa-business-time"></i>
+                        <span>Công Giảng Dạy</span>
+                    </button>
+                    <button class="report-type" data-type="salary">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Lương</span>
+                    </button>
+                    <button class="report-type" data-type="schedule">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Lịch Dạy</span>
+                    </button>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Thời gian:</label>
+                            <select id="timeRange">
+                                <option value="week">Tuần này</option>
+                                <option value="month">Tháng này</option>
+                                <option value="quarter">Quý này</option>
+                                <option value="custom">Tùy chọn</option>
+                            </select>
+                        </div>
+                        <div class="date-range" id="customDateRange" style="display: none;">
+                            <input type="date" id="startDate">
+                            <span>đến</span>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Giáo viên:</label>
+                            <select id="teacherFilter" multiple>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Lớp:</label>
+                            <select id="classFilter" multiple>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Trạng thái:</label>
+                            <select id="statusFilter" multiple>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Content -->
+                <div class="report-content">
+                    <!-- Summary Cards -->
+                    <div class="summary-cards">
+                        <!-- Will be populated by JavaScript based on report type -->
+                    </div>
+
+                    <!-- Data Visualization -->
+                    <div class="visualization-section">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+
+                    <!-- Detailed Data Table -->
+                    <div class="data-table-section">
+                        <table id="reportTable">
+                            <!-- Will be populated by JavaScript -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Export Options Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <h2>Tùy Chọn Xuất Báo Cáo</h2>
+            <div class="export-options">
+                <div class="option-group">
+                    <label>
+                        <input type="checkbox" name="includeCharts" checked>
+                        Bao gồm biểu đồ
+                    </label>
+                </div>
+                <div class="option-group">
+                    <label>
+                        <input type="checkbox" name="includeSummary" checked>
+                        Bao gồm tổng hợp
+                    </label>
+                </div>
+                <div class="option-group">
+                    <label>Định dạng:</label>
+                    <select name="format">
+                        <option value="xlsx">.xlsx</option>
+                        <option value="csv">.csv</option>
+                        <option value="sheets">Google Sheets</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelExport">Hủy</button>
+                <button class="btn-primary" id="confirmExport">Xuất Báo Cáo</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/components/reports.js"></script>
+</body>
+</html> 

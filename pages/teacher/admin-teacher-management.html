@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Giáo Viên | Admin</title>
+    <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
+    <link rel="stylesheet" href="../../css/components/teacher-management.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../assets/images/logo.png" alt="Logo" class="logo">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="../../pages/dashboard/admin.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li class="active"><a href="../../pages/teacher/admin-teacher-management.html"><i class="fas fa-users"></i> Quản lý giáo viên</a></li>
+                    <li><a href="../class/admin-class-management.html"><i class="fas fa-graduation-cap"></i> Quản lý lớp học</a></li>
+                    <li><a href="../attendance/admin-attendance.html"><i class="fas fa-clock"></i> Duyệt điểm danh</a></li>
+                    <li><a href="../schedule/admin-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch trống</a></li>
+                    <li><a href="../reports/admin-reports.html"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
+                    <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Quản Lý Giáo Viên</h1>
+                <div class="header-actions">
+                    <button class="btn-primary" id="addTeacher">
+                        <i class="fas fa-plus"></i> Thêm Giáo Viên
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <div class="filter-section">
+                    <input type="text" id="teacherSearch" placeholder="Tìm kiếm giáo viên...">
+                </div>
+
+                <div class="teacher-list" id="teacherList">
+                    <!-- Danh sách giáo viên sẽ được hiển thị ở đây -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/components/teacher-management.js" type="module"></script>
+</body>
+</html> 
