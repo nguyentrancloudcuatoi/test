@@ -259,3 +259,43 @@
     background-color: #1890FF;
     inline-size: 100%;
 }
+
+.custom-select {
+    width: 100%; /* Chiều rộng đầy đủ */
+    padding: 10px; /* Khoảng cách bên trong */
+    border: 1px solid #ccc; /* Đường viền */
+    border-radius: 5px; /* Bo góc */
+    background-color: #f9f9f9; /* Màu nền */
+    font-size: 16px; /* Kích thước chữ */
+    appearance: none; /* Ẩn kiểu mặc định */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><polygon points="0,0 10,0 5,5" fill="%23999"/></svg>'); /* Mũi tên tùy chỉnh */
+    background-repeat: no-repeat; /* Không lặp lại */
+    background-position: right 10px center; /* Vị trí mũi tên */
+}
+
+.custom-select:focus {
+    border-color: #007bff; /* Đổi màu viền khi được chọn */
+    outline: none; /* Ẩn viền mặc định */
+}
+
+.class-selector select {
+    padding: 10px; /* Thêm padding cho select */
+    font-size: 16px; /* Kích thước chữ */
+    border: 1px solid #ccc; /* Đường viền */
+    border-radius: 10px; /* Bo góc */
+    background-color: #f9f9f9; /* Màu nền */
+    cursor: pointer; /* Con trỏ khi hover */
+}
+
+.history-filter {
+    margin-left: 10px;
+    font-size: 16px; /* Kích thước chữ */
+    border: 2px solid #ccc; /*Đường viền*/
+    border-radius: 5px;
+}
+
+.history-list {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
