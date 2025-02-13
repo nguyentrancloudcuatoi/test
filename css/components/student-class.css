@@ -247,3 +247,15 @@
         gap: 10px;
     }
 }
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background-color: #1890FF;
+    inline-size: 100%;
+}
