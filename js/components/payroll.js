@@ -38,7 +38,10 @@ class PayrollManager {
         document.querySelector('.btn-next').addEventListener('click', () => this.navigatePeriod(1));
         
         // Export button
-        document.getElementById('exportPayslip').addEventListener('click', () => this.exportPayslip());
+        const exportButton = document.getElementById('exportPayslip');
+        if (exportButton) {
+            exportButton.addEventListener('click', () => this.exportPayslip());
+        }
         
         // Toast close button
         document.querySelector('.toast-close').addEventListener('click', () => this.hideToast());
@@ -49,6 +52,7 @@ class PayrollManager {
             const data = await this.fetchPayrollData(this.currentDate);
             this.updatePayrollDisplay(data);
             this.loadRecentUpdates();
+            this.handleRealtimeUpdate({ type: 'salary_updated' }); // Giả lập cập nhật lương
         } catch (error) {
             console.error('Error loading payroll data:', error);
             this.showToast('Không thể tải dữ liệu lương. Vui lòng thử lại sau.');
@@ -138,7 +142,8 @@ class PayrollManager {
     }
 
     formatDateTime(timestamp) {
-        return new Date(timestamp).toLocaleString('vi-VN');
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return new Date(timestamp).toLocaleDateString('vi-VN', options);
     }
 
     getUpdateIcon(type) {
@@ -165,6 +170,7 @@ class PayrollManager {
             const data = await this.fetchPayslipData();
             // Handle payslip export
             console.log('Exporting payslip:', data);
+            alert("Xuất phiếu lương thành công!");
         } catch (error) {
             console.error('Error exporting payslip:', error);
             this.showToast('Không thể xuất phiếu lương. Vui lòng thử lại sau.');

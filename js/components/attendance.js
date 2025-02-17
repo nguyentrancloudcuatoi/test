@@ -1,34 +1,55 @@
 class AttendanceManager {
     constructor() {
-        this.initializeElements();
-        this.attachEventListeners();
-        this.loadInitialData();
+        this.studentList = document.getElementById("studentList");
+        this.saveDraftButton = document.getElementById("saveDraft");
+        this.submitAttendanceButton = document.getElementById("submitAttendance");
+        this.confirmModal = document.getElementById("confirmModal");
+        this.init();
     }
 
-    initializeElements() {
-        // Form elements
-        this.classSelect = document.getElementById('classSelect');
-        this.lessonSelect = document.getElementById('lessonSelect');
-        this.lessonDate = document.getElementById('lessonDate');
-        this.lessonTime = document.getElementById('lessonTime');
-        this.studentList = document.getElementById('studentList');
-        this.attendanceForm = document.getElementById('attendanceForm');
-
-        // Modals
-        this.confirmModal = document.getElementById('confirmModal');
+    init() {
+        this.saveDraftButton.addEventListener("click", () => this.saveDraft());
+        this.submitAttendanceButton.addEventListener("click", () => this.showConfirmModal());
+        this.confirmModal.querySelector("#confirmSubmit").addEventListener("click", () => this.submitAttendance());
+        this.confirmModal.querySelector("#cancelSubmit").addEventListener("click", () => this.hideConfirmModal());
     }
 
-    attachEventListeners() {
-        // Class selection change
-        this.classSelect.addEventListener('change', () => this.handleClassChange());
+    async saveDraft() {
+        try {
+            const formData = this.collectFormData();
+            await this.saveAttendanceDraft(formData);
+            alert('Đã lưu nháp thành công!');
+        } catch (error) {
+            console.error('Error saving draft:', error);
+            alert('Có lỗi xảy ra khi lưu nháp!');
+        }
+    }
 
-        // Form submission
-        document.getElementById('saveDraft').addEventListener('click', () => this.saveDraft());
-        document.getElementById('submitAttendance').addEventListener('click', () => this.showConfirmModal());
+    showConfirmModal() {
+        this.confirmModal.style.display = 'block';
+    }
 
-        // Modal actions
-        document.getElementById('confirmSubmit').addEventListener('click', () => this.submitAttendance());
-        document.getElementById('cancelSubmit').addEventListener('click', () => this.hideConfirmModal());
+    hideConfirmModal() {
+        this.confirmModal.style.display = 'none';
+    }
+
+    async submitAttendance() {
+        try {
+            const formData = this.collectFormData();
+            await this.submitAttendanceData(formData);
+            this.hideConfirmModal();
+            alert('Đã gửi điểm danh thành công!');
+            window.location.href = '/pages/attendance/list.html';
+        } catch (error) {
+            console.error('Error submitting attendance:', error);
+            alert('Có lỗi xảy ra khi gửi điểm danh!');
+        }
+    }
+
+    collectFormData() {
+        // Collect data from the form
+        const formData = new FormData(document.getElementById("attendanceForm"));
+        return formData;
     }
 
     async loadInitialData() {
@@ -87,70 +108,6 @@ class AttendanceManager {
         `).join('');
     }
 
-    async saveDraft() {
-        try {
-            const formData = this.collectFormData();
-            await this.saveAttendanceDraft(formData);
-            alert('Đã lưu nháp thành công!');
-        } catch (error) {
-            console.error('Error saving draft:', error);
-            alert('Có lỗi xảy ra khi lưu nháp!');
-        }
-    }
-
-    showConfirmModal() {
-        this.confirmModal.style.display = 'block';
-    }
-
-    hideConfirmModal() {
-        this.confirmModal.style.display = 'none';
-    }
-
-    async submitAttendance() {
-        try {
-            const formData = this.collectFormData();
-            await this.submitAttendanceData(formData);
-            this.hideConfirmModal();
-            alert('Đã gửi điểm danh thành công!');
-            window.location.href = '/pages/attendance/list.html';
-        } catch (error) {
-            console.error('Error submitting attendance:', error);
-            alert('Có lỗi xảy ra khi gửi điểm danh!');
-        }
-    }
-
-    collectFormData() {
-        // Collect all form data
-        const formData = new FormData(this.attendanceForm);
-        return {
-            classId: this.classSelect.value,
-            lessonId: this.lessonSelect.value,
-            date: this.lessonDate.value,
-            time: this.lessonTime.value,
-            content: formData.get('lessonContent'),
-            homework: formData.get('homework'),
-            recordingLink: formData.get('recordingLink'),
-            notes: formData.get('notes'),
-            students: this.collectStudentAttendance()
-        };
-    }
-
-    collectStudentAttendance() {
-        const students = [];
-        document.querySelectorAll('.student-item').forEach(item => {
-            const studentId = item.querySelector('.student-info img').alt;
-            const status = item.querySelector('input[type="radio"]:checked')?.value;
-            const note = item.querySelector('input[type="text"]').value;
-            
-            students.push({
-                studentId,
-                status,
-                note
-            });
-        });
-        return students;
-    }
-
     // API simulation methods
     async fetchTeacherClasses() {
         return [
@@ -184,7 +141,7 @@ class AttendanceManager {
     }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize the AttendanceManager when the DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
     new AttendanceManager();
 }); 

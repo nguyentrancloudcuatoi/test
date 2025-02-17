@@ -11,6 +11,7 @@ class ScheduleManager {
         this.currentWeekElement = document.getElementById('currentWeek');
         this.modal = document.getElementById('slotModal');
         this.notificationPanel = document.getElementById('notificationPanel');
+        this.scheduleList = document.getElementById("teacherScheduleList"); // Giả sử bạn có bảng này trong HTML
         
         // Current date tracking
         this.currentDate = new Date();
@@ -43,11 +44,11 @@ class ScheduleManager {
 
     async loadScheduleData() {
         try {
-            // Simulate API call to get schedule data
             const scheduleData = await this.fetchScheduleData();
             this.renderSchedule(scheduleData);
         } catch (error) {
             console.error('Error loading schedule:', error);
+            alert('Không thể tải lịch. Vui lòng thử lại sau.');
         }
     }
 
@@ -65,7 +66,7 @@ class ScheduleManager {
 
     generateTimeSlots() {
         const slots = [];
-        for (let hour = 7; hour <= 21; hour++) {
+        for (let hour = 6; hour <= 23; hour++) {
             slots.push(`${hour}:00`);
         }
         return slots;
@@ -79,12 +80,26 @@ class ScheduleManager {
     renderSchedule(data) {
         this.renderTimeSlots(data.timeSlots);
         this.renderDaysHeader();
+        
+        // Thêm hàng trống giữa cột thời gian và cột ngày
+        const emptyRow = document.createElement('div');
+        emptyRow.className = 'empty-row'; // Thêm class để có thể định dạng nếu cần
+        this.scheduleGrid.insertAdjacentElement('afterbegin', emptyRow);
+        
         this.renderScheduleSlots(data);
         this.updateCurrentWeek();
     }
 
     renderTimeSlots(timeSlots) {
         const timeSlotsContainer = document.querySelector('.time-slots');
+        timeSlotsContainer.innerHTML = ''; // Clear previous slots
+
+        // Thêm chữ "Time" ở đầu cột thời gian
+        const timeLabel = document.createElement('div');
+        timeLabel.className = 'time-slot';
+        timeLabel.textContent = 'Time'; // Thêm chữ "Time"
+        timeSlotsContainer.appendChild(timeLabel);
+
         timeSlots.forEach(time => {
             const slot = document.createElement('div');
             slot.className = 'time-slot';
@@ -95,6 +110,7 @@ class ScheduleManager {
 
     renderDaysHeader() {
         const daysHeader = document.querySelector('.days-header');
+        daysHeader.innerHTML = ''; // Clear previous headers
         const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
         
         days.forEach(day => {
@@ -107,27 +123,25 @@ class ScheduleManager {
 
     renderScheduleSlots(data) {
         this.scheduleGrid.innerHTML = '';
-        const totalSlots = data.timeSlots.length * 7;
+        const totalSlots = data.timeSlots.length * 7; // 7 ngày trong tuần
 
-        for (let i = 0; i < totalSlots; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'schedule-slot';
-            slot.addEventListener('click', () => this.openSlotModal(i));
-            this.scheduleGrid.appendChild(slot);
+        for (let day = 0; day < 7; day++) {
+            for (let time = 1; time < data.timeSlots.length; time++) {
+                const slotIndex = day * data.timeSlots.length + time; // Tính chỉ số ô
+                const slot = document.createElement('div');
+                slot.className = 'schedule-slot';
+                slot.style.gridRowStart = time + 1; // Đặt hàng cho ô
+                slot.style.gridColumnStart = day + 1; // Đặt cột cho ô
+                slot.addEventListener('click', () => this.openSlotModal(slotIndex));
+                this.scheduleGrid.appendChild(slot);
+            }
         }
     }
 
-    openSlotModal(slotIndex) {
-        this.selectedSlot = slotIndex;
-        this.modal.style.display = 'block';
-        
-        // Populate modal with slot details
-        const timeSlot = this.getTimeSlotFromIndex(slotIndex);
-        document.getElementById('slotTime').textContent = timeSlot.time;
-        
-        // Định dạng ngày tháng
-        const formattedDate = this.formatDate(timeSlot.date);
-        document.getElementById('slotDate').textContent = formattedDate;
+    openSlotModal(slotTime, slotDate) {
+        document.getElementById("slotTime").textContent = slotTime;
+        document.getElementById("slotDate").textContent = slotDate;
+        this.modal.style.display = "block";
     }
 
     getTimeSlotFromIndex(index) {
@@ -139,30 +153,67 @@ class ScheduleManager {
     }
 
     closeModal() {
-        this.modal.style.display = 'none';
-        this.selectedSlot = null;
-    }
-
-    async saveSlotDetails() {
-        if (!this.selectedSlot) return;
-
-        const status = document.querySelector('input[name="status"]:checked').value;
-        const note = document.getElementById('slotNote').value;
-
-        try {
-            await this.updateSlotStatus(this.selectedSlot, status, note);
-            this.closeModal();
-            this.loadScheduleData(); // Refresh schedule
-        } catch (error) {
-            console.error('Error saving slot details:', error);
+        this.modal.style.display = "none";
+        document.getElementById('slotNote').value = ''; // Xóa ghi chú khi đóng modal
+        const checkedStatus = document.querySelector('input[name="status"]:checked');
+        if (checkedStatus) {
+            checkedStatus.checked = false; // Bỏ chọn trạng thái
         }
     }
 
-    async updateSlotStatus(slotIndex, status, note) {
-        // Simulate API call to update slot status
-        return new Promise(resolve => {
-            setTimeout(resolve, 500);
+    async saveSlotDetails() {
+        const status = document.querySelector('input[name="status"]:checked');
+        const note = document.getElementById('slotNote').value;
+
+        if (!status) {
+            alert('Vui lòng chọn trạng thái.');
+            return;
+        }
+
+        const slotData = {
+            time: document.getElementById("slotTime").textContent,
+            date: document.getElementById("slotDate").textContent,
+            status: status.value,
+            note: note
+        };
+
+        try {
+            await this.saveSlotData(slotData); // Gọi hàm để lưu thông tin khung giờ
+            alert('Đã lưu thông tin khung giờ thành công!');
+            this.addSlotToTable(slotData); // Thêm thông tin vào bảng
+            this.closeModal();
+        } catch (error) {
+            console.error('Error saving slot details:', error);
+            alert('Không thể lưu thông tin khung giờ. Vui lòng thử lại.');
+        }
+    }
+
+    async saveSlotData(slotData) {
+        // Giả lập lưu dữ liệu (có thể thay thế bằng API thực tế)
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                console.log('Slot data saved:', slotData); // In ra dữ liệu đã lưu
+                resolve();
+            }, 1000);
         });
+    }
+
+    addSlotToTable(slotData) {
+        const slotRow = document.createElement('div');
+        slotRow.className = 'schedule-item'; // Thêm class cho dòng mới
+
+        // Tạo nội dung cho dòng mới
+        slotRow.innerHTML = `
+            <div class="slot-info">
+                <span>Thời gian: ${slotData.time}</span>
+                <span>Ngày: ${slotData.date}</span>
+                <span>Trạng thái: ${slotData.status}</span>
+                <span>Ghi chú: ${slotData.note}</span>
+            </div>
+        `;
+
+        // Thêm dòng mới vào bảng
+        this.scheduleList.appendChild(slotRow);
     }
 
     navigateWeek(direction) {
@@ -223,6 +274,7 @@ class ScheduleManager {
             this.notificationPanel.style.display = 'none';
         } catch (error) {
             console.error('Error saving schedule:', error);
+            alert('Không thể lưu lịch. Vui lòng thử lại.');
         }
     }
 
@@ -261,18 +313,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Hàm lưu thông tin khung giờ
-    saveSlotButton.addEventListener("click", () => {
-        const status = document.querySelector('input[name="status"]:checked').value;
-        const note = document.getElementById("slotNote").value;
+    saveSlotButton.addEventListener("click", async () => {
+        const status = document.querySelector('input[name="status"]:checked');
+        if (!status) {
+            alert('Vui lòng chọn trạng thái.');
+            return;
+        }
+        const note = document.getElementById('slotNote').value;
 
-        // Xử lý lưu thông tin khung giờ ở đây (gửi đến server hoặc lưu vào biến)
-        console.log("Thời gian:", document.getElementById("slotTime").textContent);
-        console.log("Ngày:", document.getElementById("slotDate").textContent);
-        console.log("Trạng thái:", status);
-        console.log("Ghi chú:", note);
-
-        // Đóng modal sau khi lưu
-        slotModal.style.display = "none";
+        try {
+            await saveSlotDetails(); // Giả sử bạn có hàm này để lưu thông tin
+            alert('Đã lưu thông tin khung giờ thành công!');
+            slotModal.style.display = "none";
+            loadScheduleData(); // Cập nhật lại lịch
+        } catch (error) {
+            console.error('Error saving slot details:', error);
+            alert('Không thể lưu thông tin khung giờ. Vui lòng thử lại.');
+        }
     });
 
     // Hàm hủy
