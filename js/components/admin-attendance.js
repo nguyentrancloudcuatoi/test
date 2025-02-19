@@ -84,13 +84,25 @@ class AdminAttendanceManager {
 
     renderWorkloadSummary(workloads) {
         this.workloadTableBody.innerHTML = workloads.map(workload => `
-            <tr>
-                <td>${workload.teacherName}</td>
-                <td>${workload.lessonCount}</td>
-                <td>${workload.totalHours}</td>
-                <td>${workload.totalWorkload}</td>
+            <tr class="workload-row">
+                <td class="workload-teacher-id">${workload.teacherId}</td>
+                <td class="workload-teacher-name">${workload.teacherName}</td>
+                <td class="workload-lesson-count">${workload.lessonCount}</td>
+                <td class="workload-total-hours">${workload.totalHours}</td>
+                <td class="workload-total-workload">${workload.totalWorkload}</td>
             </tr>
-        `).join('');
+            <tr>
+                <td class="workload-teacher-id">${workload.teacherId}</td>
+                <td class="workload-teacher-name">${workload.teacherName}</td>
+                <td class="workload-lesson-count">${workload.lessonCount}</td>
+                <td class="workload-total-hours">${workload.totalHours}</td>
+                <td class="workload-total-workload">${workload.totalWorkload}</td>
+            </tr>
+        `).join('') || `
+            <tr>
+                <td colspan="10">Không có dữ liệu</td>
+            </tr>
+        `;
     }
 
     async viewAttendanceDetail(attendanceId) {
@@ -241,15 +253,45 @@ class AdminAttendanceManager {
     }
 
     async fetchWorkloadSummary() {
-        return [
+        const sampleWorkloads = [
             {
+                teacherId: 1,
                 teacherName: 'Nguyễn Văn A',
-                lessonCount: 24,
-                totalHours: 48,
-                totalWorkload: 96
+                lessonCount: 10,
+                totalHours: 100,
+                totalWorkload: 110
+            },
+            {
+                teacherId: 2,
+                teacherName: 'Trần Thị B',
+                lessonCount: 12,
+                totalHours: 120,
+                totalWorkload: 132
+            },
+            {
+                teacherId: 3,
+                teacherName: 'Lê Văn C',
+                lessonCount: 8,
+                totalHours: 80,
+                totalWorkload: 88
+            },
+            {
+                teacherId: 4,
+                teacherName: 'Nguyễn Văn D',
+                lessonCount: 15,
+                totalHours: 150,
+                totalWorkload: 165
+            },
+            {
+                teacherId: 5,
+                teacherName: 'Trần Thị E',
+                lessonCount: 9,
+                totalHours: 90,
+                totalWorkload: 99
             }
-            // More workload summaries...
         ];
+
+        return sampleWorkloads;
     }
 }
 

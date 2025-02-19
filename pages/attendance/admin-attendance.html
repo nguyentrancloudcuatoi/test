@@ -24,7 +24,6 @@
                     <li><a href="../class/admin-class-management.html"><i class="fas fa-graduation-cap"></i> Quản lý lớp học</a></li>
                     <li class="active"><a href="../attendance/admin-attendance.html"><i class="fas fa-clock"></i> Duyệt điểm danh</a></li>
                     <li><a href="../schedule/admin-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch trống</a></li>
-                    <li><a href="../reports/admin-reports.html"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
                     <li><a href="../../pages/index.html"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                 </ul>
             </nav>
@@ -115,6 +114,7 @@
                 <!-- Attendance List -->
                 <div class="attendance-list">
                     <div class="list-header">
+                        <div class="header-cell">ID giáo viên</div>
                         <div class="header-cell">Giáo viên</div>
                         <div class="header-cell">Lớp</div>
                         <div class="header-cell">Thời gian</div>
@@ -133,14 +133,49 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th>ID giáo viên</th>
                                     <th>Giáo viên</th>
                                     <th>Số buổi</th>
                                     <th>Tổng giờ</th>
-                                    <th>Tổng công</th>
+                                    <th>Tổng cộng</th>
                                 </tr>
                             </thead>
                             <tbody id="workloadTableBody">
-                                <!-- Will be populated by JavaScript -->
+                                <tr>
+                                    <td>123</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>10</td>
+                                    <td>100</td>
+                                    <td>110</td>
+                                </tr>
+                                <tr>
+                                    <td>124</td>
+                                    <td>Trần Thị B</td>
+                                    <td>12</td>
+                                    <td>120</td>
+                                    <td>132</td>
+                                </tr>
+                                <tr>
+                                    <td>125</td>
+                                    <td>Lê Văn C</td>
+                                    <td>8</td>
+                                    <td>80</td>
+                                    <td>88</td>
+                                </tr>
+                                <tr>
+                                    <td>126</td>
+                                    <td>Nguyễn Văn D</td>
+                                    <td>15</td>
+                                    <td>150</td>
+                                    <td>165</td>
+                                </tr>
+                                <tr>
+                                    <td>127</td>
+                                    <td>Trần Thị E</td>
+                                    <td>9</td>
+                                    <td>90</td>
+                                    <td>99</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

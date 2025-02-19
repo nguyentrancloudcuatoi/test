@@ -142,3 +142,17 @@
     background-color: #1890FF; /* Màu nền cho mục đang hoạt động */
     color: white; /* Màu chữ cho mục đang hoạt động */
 }
+
+.btn-primary {
+    background-color: #007bff; /* Màu xanh dương */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Thêm hiệu ứng chuyển màu */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Màu khi hover */
+}

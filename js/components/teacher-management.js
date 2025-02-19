@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Dữ liệu giả lập cho danh sách giáo viên
     const teachers = [
-        { id: 1, name: "Nguyễn Văn A", subject: "Toán", status: "Đang dạy" },
-        { id: 2, name: "Trần Thị B", subject: "Vật Lý", status: "Đang dạy" },
-        { id: 3, name: "Lê Văn C", subject: "Hóa", status: "Đang dạy" },
+        { id: 1341, name: "Nguyễn Văn A", subject: "BFB", status: "Đang dạy" },
+        { id: 2241, name: "Trần Thị B", subject: "FB", status: "Đang dạy" },
+        { id: 3721, name: "Lê Văn C", subject: "Toeic", status: "Đang dạy" },
     ];
 
     // Thêm HTML cho modal nhập thông tin giáo viên
@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3>Thêm giáo viên mới</h3>
+            <input type="text" id="teacherID" placeholder="Nhập ID giáo viên" />
             <input type="text" id="teacherName" placeholder="Nhập tên giáo viên" />
             <input type="text" id="teacherSubject" placeholder="Nhập môn học" />
             <button id="addTeacherConfirm">Thêm giáo viên</button>
@@ -86,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const teacherCard = document.createElement("div");
             teacherCard.className = "teacher-card";
             teacherCard.innerHTML = `
-                <h3>${teacher.name} - ${teacher.subject}</h3>
+                <h3>${teacher.id} - ${teacher.name} -  ${teacher.subject} </h3>
                 <button onclick="removeTeacher(${teacher.id})">Xóa</button>
             `;
             teacherList.appendChild(teacherCard);
