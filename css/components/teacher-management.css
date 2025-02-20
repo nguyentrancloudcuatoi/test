@@ -258,28 +258,84 @@ body {
     background-color: #d12e2e;
 }
 
+/* Table Styles */
+.teacher-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.teacher-table th,
+.teacher-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.teacher-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.teacher-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Column Widths */
+.col-id {
+    width: 10%;
+}
+
+.col-name {
+    width: 25%;
+}
+
+.col-subject {
+    width: 25%;
+}
+
+.col-password {
+    width: 25%;
+}
+
+.col-action {
+    width: 15%;
+    text-align: center;
+}
+
+/* Header Style */
+.teacher-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Delete Button Style */
+.btn-delete {
+    width: 100%;
+    padding: 8px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Row Hover Effect */
+.teacher-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column; /* Đặt chiều dọc cho container trên màn hình nhỏ */
-    }
-
-    .sidebar {
-        width: 100%; /* Chiều rộng 100% cho sidebar trên màn hình nhỏ */
-        padding: 10px; /* Giảm padding */
-    }
-
-    .main-content {
-        padding: 10px; /* Giảm padding cho nội dung chính */
-    }
-
-    .teacher-card {
-        flex-direction: column; /* Đặt chiều dọc cho thẻ giáo viên */
-        align-items: flex-start; /* Căn trái cho nội dung */
-    }
-
-    .teacher-card button {
-        width: 100%; /* Nút chiếm toàn bộ chiều rộng */
-        margin-top: 10px; /* Khoảng cách trên nút */
+    .teacher-table {
+        display: block;
+        overflow-x: auto;
     }
 } 

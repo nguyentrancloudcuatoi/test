@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Dữ liệu giả lập cho danh sách giáo viên
     const teachers = [
-        { id: 1341, name: "Nguyễn Văn A", subject: "BFB", status: "Đang dạy" },
-        { id: 2241, name: "Trần Thị B", subject: "FB", status: "Đang dạy" },
-        { id: 3721, name: "Lê Văn C", subject: "Toeic", status: "Đang dạy" },
+        { id: 1341, name: "Nguyễn Văn A", subject: "BFB", passwords: "vana123@656", status: "Đang dạy" },
+        { id: 2241, name: "Trần Thị B", subject: "FB", passwords: "vana123@656", status: "Đang dạy" },
+        { id: 3721, name: "Lê Văn C", subject: "Toeic", passwords: "vana123@656", status: "Đang dạy" },
     ];
 
     // Thêm HTML cho modal nhập thông tin giáo viên
@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="text" id="teacherID" placeholder="Nhập ID giáo viên" />
             <input type="text" id="teacherName" placeholder="Nhập tên giáo viên" />
             <input type="text" id="teacherSubject" placeholder="Nhập môn học" />
+            <input type="text" id="teacherPasswords" placeholder="Nhập Passwords" />
             <button id="addTeacherConfirm">Thêm giáo viên</button>
             <p id="modal-message"></p>
         </div>
@@ -82,16 +83,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Hàm hiển thị danh sách giáo viên
     function displayTeachers() {
-        teacherList.innerHTML = "";
-        teachers.forEach(teacher => {
-            const teacherCard = document.createElement("div");
-            teacherCard.className = "teacher-card";
-            teacherCard.innerHTML = `
-                <h3>${teacher.id} - ${teacher.name} -  ${teacher.subject} </h3>
-                <button onclick="removeTeacher(${teacher.id})">Xóa</button>
-            `;
-            teacherList.appendChild(teacherCard);
-        });
+        teacherList.innerHTML = `
+            <table class="teacher-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">ID</th>
+                        <th style="width: 25%">Tên</th>
+                        <th style="width: 20%">Môn học</th>
+                        <th style="width: 25%">Passwords</th>
+                        <th style="width: 15%">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${teachers.map(teacher => `
+                        <tr>
+                            <td>${teacher.id}</td>
+                            <td>${teacher.name}</td>
+                            <td>${teacher.subject}</td>
+                            <td>${teacher.passwords}</td>
+                            <td>
+                                <button class="btn-delete" data-teacher-id="${teacher.id}">Xóa</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     // Hàm hiển thị modal
@@ -111,35 +128,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Xử lý thêm giáo viên khi nhấn nút xác nhận
     modal.querySelector("#addTeacherConfirm").addEventListener("click", () => {
+        const newTeacherID = parseInt(document.getElementById("teacherID").value);
         const newTeacherName = document.getElementById("teacherName").value;
         const newTeacherSubject = document.getElementById("teacherSubject").value;
+        const newTeacherPasswords = document.getElementById("teacherPasswords").value;
+
         if (newTeacherName && newTeacherSubject) {
+            // Tạo ID mới nếu không có ID được nhập vào
+            const maxId = Math.max(...teachers.map(t => t.id), 0);
             const newTeacher = {
-                id: teachers.length + 1,
+                id: newTeacherID || (maxId + 1), // Sử dụng ID lớn nhất hiện tại + 1
                 name: newTeacherName,
                 subject: newTeacherSubject,
-                status: "Đang dạy"
+                status: "Đang dạy",
+                passwords: newTeacherPasswords || "default123"
             };
             teachers.push(newTeacher);
             displayTeachers();
-            // Hiển thị modal thông báo
-            showModal(`Đã thêm giáo viên: ${newTeacherName}`);
-            // Đóng modal
             modal.style.display = "none";
-            // Xóa giá trị trong các trường nhập liệu
+            
+            // Clear input fields
+            document.getElementById("teacherID").value = '';
             document.getElementById("teacherName").value = '';
             document.getElementById("teacherSubject").value = '';
+            document.getElementById("teacherPasswords").value = '';
+        } else {
+            alert("Vui lòng nhập đầy đủ thông tin giáo viên!");
         }
     });
 
-    // Hàm xóa giáo viên
-    window.removeTeacher = (id) => {
-        const index = teachers.findIndex(teacher => teacher.id === id);
-        if (index > -1) {
-            teachers.splice(index, 1);
-            displayTeachers();
+    // Add event delegation for delete buttons
+    teacherList.addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-delete")) {
+            const id = parseInt(e.target.dataset.teacherId);
+            const index = teachers.findIndex(teacher => teacher.id === id);
+            if (index > -1) {
+                teachers.splice(index, 1);
+                displayTeachers();
+            }
         }
-    };
+    });
 
     // Hiển thị danh sách giáo viên ban đầu
     displayTeachers();
