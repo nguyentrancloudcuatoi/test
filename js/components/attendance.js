@@ -35,15 +35,44 @@ class AttendanceManager {
 
     async submitAttendance() {
         try {
-            const formData = this.collectFormData();
-            await this.submitAttendanceData(formData);
+            const formData = new FormData(document.getElementById('attendanceForm'));
+            const attendanceRecord = {
+                id: Date.now().toString(),
+                teacherId: '123', // Thay bằng ID thực của giáo viên
+                teacherName: 'Nguyễn Văn A', // Thay bằng tên thực của giáo viên
+                classCode: formData.get('classCode'),
+                vietnameseTime: new Date().toLocaleString('vi-VN'),
+                teachingMethod: formData.get('teachingMethod'),
+                session: formData.get('session'),
+                duration: formData.get('duration'),
+                students: this.getStudentAttendance(),
+                note: formData.get('note'),
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            // Lưu vào localStorage
+            const existingRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+            existingRecords.push(attendanceRecord);
+            localStorage.setItem('attendanceRecords', JSON.stringify(existingRecords));
+
             this.hideConfirmModal();
             alert('Đã gửi điểm danh thành công!');
-            window.location.href = '/pages/attendance/list.html';
+            window.location.href = '/pages/attendance/check-attendance.html';
         } catch (error) {
             console.error('Error submitting attendance:', error);
             alert('Có lỗi xảy ra khi gửi điểm danh!');
         }
+    }
+
+    getStudentAttendance() {
+        const studentItems = document.querySelectorAll('.student-item');
+        return Array.from(studentItems).map(item => {
+            const studentName = item.querySelector('.student-info span').textContent;
+            const status = item.querySelector('input[type="radio"]:checked').value;
+            const note = item.querySelector('input[type="text"]').value;
+            return { name: studentName, status, note };
+        });
     }
 
     collectFormData() {

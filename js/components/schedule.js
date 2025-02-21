@@ -4,6 +4,7 @@ class ScheduleManager {
         this.attachEventListeners();
         this.loadScheduleData();
         this.checkLastUpdate();
+        this.scheduleStatus = 'pending'; // Thêm trạng thái mặc định
     }
 
     initializeElements() {
@@ -171,17 +172,20 @@ class ScheduleManager {
         }
 
         const slotData = {
+            teacherId: this.getCurrentTeacherId(), // Thêm ID giáo viên
             time: document.getElementById("slotTime").textContent,
             date: document.getElementById("slotDate").textContent,
             status: status.value,
-            note: note
+            note: note,
+            approvalStatus: 'pending' // Thêm trạng thái phê duyệt
         };
 
         try {
-            await this.saveSlotData(slotData); // Gọi hàm để lưu thông tin khung giờ
-            alert('Đã lưu thông tin khung giờ thành công!');
-            this.addSlotToTable(slotData); // Thêm thông tin vào bảng
+            await this.saveSlotData(slotData);
+            this.addSlotToTable(slotData);
             this.closeModal();
+            // Gửi thông báo đến admin
+            await this.notifyAdmin(slotData);
         } catch (error) {
             console.error('Error saving slot details:', error);
             alert('Không thể lưu thông tin khung giờ. Vui lòng thử lại.');
@@ -292,6 +296,20 @@ class ScheduleManager {
         const month = dateParts[1];
         const year = dateParts[2];
         return `${day}/${month}/${year}`; // Hoặc định dạng khác nếu cần
+    }
+
+    async notifyAdmin(slotData) {
+        try {
+            await fetch('/api/schedule/notify-admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(slotData)
+            });
+        } catch (error) {
+            console.error('Error notifying admin:', error);
+        }
     }
 }
 

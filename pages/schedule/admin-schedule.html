@@ -69,6 +69,15 @@
                             <option value="outdated">Chưa cập nhật</option>
                         </select>
                     </div>
+                    <div class="filter-group">
+                        <label>Trạng thái phê duyệt:</label>
+                        <select id="approvalFilter">
+                            <option value="">Tất cả</option>
+                            <option value="pending">Chờ duyệt</option>
+                            <option value="approved">Đã duyệt</option>
+                            <option value="rejected">Đã từ chối</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Statistics Cards -->
@@ -108,11 +117,7 @@
                 <!-- Teacher Schedule List -->
                 <div class="schedule-list-container">
                     <div class="list-header">
-                        <div class="header-cell">Giáo viên</div>
-                        <div class="header-cell">Cập nhật cuối</div>
-                        <div class="header-cell">Slots khả dụng</div>
-                        <div class="header-cell">Trạng thái</div>
-                        <div class="header-cell">Thao tác</div>
+                        <!-- Will be populated by JavaScript -->
                     </div>
                     <div class="schedule-list" id="teacherScheduleList">
                         <!-- Will be populated by JavaScript -->

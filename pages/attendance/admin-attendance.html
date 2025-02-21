@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../css/components/admin-dashboard.css">
     <link rel="stylesheet" href="../../css/components/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -113,17 +114,21 @@
 
                 <!-- Attendance List -->
                 <div class="attendance-list">
-                    <div class="list-header">
-                        <div class="header-cell">ID giáo viên</div>
-                        <div class="header-cell">Giáo viên</div>
-                        <div class="header-cell">Lớp</div>
-                        <div class="header-cell">Thời gian</div>
-                        <div class="header-cell">Trạng thái</div>
-                        <div class="header-cell">Thao tác</div>
-                    </div>
-                    <div id="attendanceItems">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>ID giáo viên</th>
+                                <th>Giáo viên</th>
+                                <th>Lớp</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceItems">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Workload Summary -->
