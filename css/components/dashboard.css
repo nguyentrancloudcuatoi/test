@@ -216,4 +216,28 @@ body {
     color: var(--primary-color);
     text-decoration: none;
     font-size: 0.9rem;
+}
+
+/* Notification List Styles */
+.notification-list {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+}
+
+.notification-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+}
+
+.notification-item:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+/* Custom Notification Styles */
+.custom-notification {
+    border-left: 4px solid var(--primary-color);
+    background-color: #f9f9f9;
 } 

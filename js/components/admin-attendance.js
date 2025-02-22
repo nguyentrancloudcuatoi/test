@@ -47,10 +47,8 @@ class AdminAttendanceManager {
     }
 
     async loadInitialData() {
-        // Lấy danh sách giáo viên từ localStorage
         const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        
-        // Populate teacher filter với option mặc định
+        // Populate teacher filter with default option
         this.teacherFilter.innerHTML = `
             <option value="">Tất cả giáo viên</option>
             ${teachers.map(teacher => `
@@ -58,10 +56,7 @@ class AdminAttendanceManager {
             `).join('')}
         `;
 
-        // Lấy dữ liệu điểm danh từ localStorage
         let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
-        
-        // Thêm thông tin giáo viên vào mỗi bản ghi điểm danh
         attendanceRecords = attendanceRecords.map(record => {
             const teacher = teachers.find(t => t.email === record.teacherId);
             if (teacher) {
@@ -70,10 +65,6 @@ class AdminAttendanceManager {
             return record;
         });
 
-        // Lưu lại dữ liệu đã được cập nhật
-        localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-
-        // Hiển thị dữ liệu ban đầu
         this.renderAttendanceList(attendanceRecords);
         this.updateStatistics(attendanceRecords);
     }
@@ -84,7 +75,7 @@ class AdminAttendanceManager {
             <tr data-attendance-id="${attendance.id}">
                 <td>${attendance.teacherId}</td>
                 <td>${attendance.teacherName || 'N/A'}</td>
-                <td>${attendance.classCode}</td>
+                <td>${attendance.classCode || 'Chưa có lớp'}</td>
                 <td>${attendance.vietnameseTime}</td>
                 <td>
                     <span class="status-badge status-${attendance.status}">
@@ -156,7 +147,7 @@ class AdminAttendanceManager {
                     </div>
                     <div class="info-item">
                         <strong>Lớp:</strong>
-                        <span>${detail.classCode}</span>
+                        <span>${detail.classCode || 'N/A'}</span>
                     </div>
                     <div class="info-item">
                         <strong>Thời gian:</strong>
@@ -222,6 +213,23 @@ class AdminAttendanceManager {
             attendanceData[index].approvalDate = new Date().toISOString();
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceData));
             
+            // Gửi thông báo cho giáo viên
+            const notification = {
+                id: Date.now().toString(),
+                teacherEmail: attendanceData[index].teacherEmail,
+                message: isApproved 
+                    ? `Điểm danh ngày ${new Date(attendanceData[index].date).toLocaleDateString()} đã được phê duyệt`
+                    : `Điểm danh ngày ${new Date(attendanceData[index].date).toLocaleDateString()} đã bị từ chối`,
+                type: isApproved ? 'success' : 'warning',
+                date: new Date().toISOString(),
+                isRead: false
+            };
+
+            // Lưu thông báo vào localStorage
+            const notifications = JSON.parse(localStorage.getItem('teacherNotifications')) || [];
+            notifications.push(notification);
+            localStorage.setItem('teacherNotifications', JSON.stringify(notifications));
+            
             // Cập nhật UI
             await this.updateUIAfterApproval(attendanceData, attendanceId);
             
@@ -232,41 +240,46 @@ class AdminAttendanceManager {
             this.closeModal();
         } catch (error) {
             console.error('Error handling approval:', error);
-            alert('Có lỗi xảy ra khi xử lý phê duyệt!');
+            alert('Có lỗi xảy ra khi xử lý phê duyệt! ' + error.message);
         }
     }
 
     async updateUIAfterApproval(attendanceData, approvedId) {
-        // 1. Cập nhật hàng trong bảng
-        const row = document.querySelector(`tr[data-attendance-id="${approvedId}"]`);
-        if (row) {
-            const attendance = attendanceData.find(a => a.id === approvedId);
-            const statusCell = row.querySelector('.status-badge');
-            const actionsCell = row.querySelector('.action-buttons');
-            
-            // Cập nhật trạng thái
-            statusCell.className = `status-badge status-${attendance.status}`;
-            statusCell.textContent = this.getStatusText(attendance.status);
-            
-            // Cập nhật nút tác vụ - chỉ giữ lại nút xem chi tiết
-            actionsCell.innerHTML = `
-                <button class="btn-view" onclick="adminAttendance.viewAttendanceDetail('${attendance.id}')">
-                    <i class="fas fa-eye"></i> Xem
-                </button>
-            `;
+        try {
+            // 1. Cập nhật hàng trong bảng
+            const row = document.querySelector(`tr[data-attendance-id="${approvedId}"]`);
+            if (row) {
+                const attendance = attendanceData.find(a => a.id === approvedId);
+                if (attendance) {
+                    const statusCell = row.querySelector('td:nth-child(5)');
+                    const actionsCell = row.querySelector('td:nth-child(6)');
+                    
+                    // Cập nhật trạng thái
+                    statusCell.innerHTML = `
+                        <span class="status-badge status-${attendance.status}">
+                            ${this.getStatusText(attendance.status)}
+                        </span>
+                    `;
+                    
+                    // Cập nhật nút tác vụ - chỉ giữ lại nút xem chi tiết
+                    actionsCell.innerHTML = `
+                        <button class="btn-view" onclick="adminAttendance.viewAttendanceDetail('${attendance.id}')">
+                            <i class="fas fa-eye"></i> Xem
+                        </button>
+                    `;
+                }
+            }
+
+            // 2. Cập nhật thống kê
+            this.updateStatistics(attendanceData);
+
+            // 3. Áp dụng lại bộ lọc hiện tại
+            this.applyFilters();
+
+        } catch (error) {
+            console.error('Error updating UI after approval:', error);
+            throw new Error('Không thể cập nhật giao diện sau khi phê duyệt: ' + error.message);
         }
-
-        // 2. Cập nhật thống kê
-        this.updateStatistics(attendanceData);
-
-        // 3. Cập nhật bảng tổng hợp công nếu có
-        const workloads = await this.calculateWorkloads(attendanceData);
-        this.renderWorkloadSummary(workloads);
-
-        // 4. Áp dụng lại bộ lọc hiện tại nếu có
-        const currentFilters = this.getCurrentFilters();
-        const filteredData = this.applyFiltersToData(attendanceData, currentFilters);
-        this.renderAttendanceList(filteredData);
     }
 
     getCurrentFilters() {
@@ -650,4 +663,63 @@ class AdminAttendanceManager {
 let adminAttendance;
 document.addEventListener('DOMContentLoaded', () => {
     adminAttendance = new AdminAttendanceManager();
-}); 
+});
+
+// Function to handle pagination
+let currentPage = 1;
+const itemsPerPage = 10;
+let attendanceData = []; // Mảng chứa dữ liệu điểm danh
+
+function loadAttendanceData() {
+    // Giả sử bạn đã có một hàm để lấy dữ liệu điểm danh từ server
+    fetchAttendanceData().then(data => {
+        attendanceData = data; // Lưu dữ liệu vào mảng
+        renderAttendanceTable();
+    });
+}
+
+function renderAttendanceTable() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedData = attendanceData.slice(startIndex, endIndex);
+    
+    const attendanceItems = document.getElementById('attendanceItems');
+    attendanceItems.innerHTML = ''; // Xóa nội dung cũ
+
+    paginatedData.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.teacherId}</td>
+            <td>${item.teacherName}</td>
+            <td>${item.class}</td>
+            <td>${item.time}</td>
+            <td>${item.status}</td>
+            <td><button onclick="handleAction(${item.id})">Thao tác</button></td>
+        `;
+        attendanceItems.appendChild(row);
+    });
+
+    updatePaginationButtons();
+}
+
+function updatePaginationButtons() {
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage * itemsPerPage >= attendanceData.length;
+}
+
+document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderAttendanceTable();
+    }
+});
+
+document.getElementById('nextPage').addEventListener('click', () => {
+    if (currentPage * itemsPerPage < attendanceData.length) {
+        currentPage++;
+        renderAttendanceTable();
+    }
+});
+
+// Gọi hàm để tải dữ liệu khi trang được tải
+loadAttendanceData(); 

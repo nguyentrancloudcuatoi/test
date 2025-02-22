@@ -46,18 +46,8 @@
             <div class="dashboard-content">
                 <!-- Stats Cards -->
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon classes">
-                            <i class="fas fa-chalkboard"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3>Lớp Đang Hoạt Động</h3>
-                            <p class="stat-number">45</p>
-                            <p class="stat-desc">Tăng 5% so với tháng trước</p>
-                        </div>
-                    </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card hover-effect">
                         <div class="stat-icon pending">
                             <i class="fas fa-clock"></i>
                         </div>
@@ -68,8 +58,8 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
+                    <div class="stat-card hover-effect">
+                        <div class="stat-icon warning" style="background-color: rgb(243, 253, 99);">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="stat-details">
@@ -79,14 +69,13 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon teachers">
+                    <div class="stat-card hover-effect">
+                        <div class="stat-icon teachers" style="background-color: rgb(0, 255, 13);">
                             <i class="fas fa-user-tie"></i>
                         </div>
                         <div class="stat-details">
                             <h3>Tổng Giáo Viên</h3>
-                            <p class="stat-number">32</p>
-                            <p class="stat-desc">Đang hoạt động</p>
+                            <p class="stat-number" id="totalTeachers">0</p>
                         </div>
                     </div>
                 </div>
@@ -100,7 +89,13 @@
                             <a href="#" class="view-all">Xem tất cả</a>
                         </div>
                         <div class="approval-list">
-                            <!-- Will be populated by JavaScript -->
+                            <!-- Dữ liệu tĩnh hiển thị danh sách điểm danh chờ duyệt -->
+                            <ul>
+                                <li>Điểm danh 1: Chờ duyệt</li>
+                                <li>Điểm danh 2: Chờ duyệt</li>
+                                <li>Điểm danh 3: Chờ duyệt</li>
+                                <!-- Thêm các mục khác nếu cần -->
+                            </ul>
                         </div>
                     </div>
 
@@ -120,5 +115,35 @@
     </div>
     <script src="../../js/components/data-manager.js" type="module"></script>
     <script src="../../js/components/admin-dashboard.js" type="module"></script>
+    <script>
+        // Fetch the attendance data from admin-attendance.html
+        fetch('../../pages/attendance/admin-attendance.html')
+            .then(response => response.text())
+            .then(data => {
+                // Parse the data to extract the attendance list
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const attendanceItems = doc.querySelectorAll('.attendance-item'); // Adjust selector as needed
+                
+                // Populate the approval list
+                const approvalList = document.getElementById('approval-list');
+                approvalList.innerHTML = ''; // Clear existing content
+                attendanceItems.forEach(item => {
+                    approvalList.innerHTML += `<li>${item.textContent}</li>`; // Assuming each item contains the relevant text
+                });
+            })
+            .catch(error => console.error('Error fetching attendance data:', error));
+
+        // Thêm code để cập nhật số lượng giáo viên mà không cần điều kiện
+        fetch('../../pages/teacher/admin-teacher-management.html')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const teacherRows = doc.querySelectorAll('.teacher-row'); // Điều chỉnh selector theo cấu trúc HTML của bạn
+                document.getElementById('totalTeachers').textContent = teacherRows.length; // Cập nhật số lượng giáo viên
+            })
+            .catch(error => console.error('Error fetching teacher data:', error));
+    </script>
 </body>
 </html> 

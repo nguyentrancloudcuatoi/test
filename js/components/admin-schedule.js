@@ -29,18 +29,9 @@ class AdminScheduleManager {
     }
 
     async loadInitialData() {
-        try {
-            const [teachers, schedules] = await Promise.all([
-                this.fetchTeachers(),
-                this.fetchSchedules()
-            ]);
-
-            this.populateTeacherFilter(teachers);
-            this.renderScheduleList(schedules);
-            this.updateStatistics(schedules);
-        } catch (error) {
-            console.error('Error loading initial data:', error);
-        }
+        const schedules = await this.fetchSchedules();
+        this.renderScheduleList(schedules);
+        this.updateStatistics(schedules);
     }
 
     async fetchTeachers() {
@@ -56,6 +47,9 @@ class AdminScheduleManager {
         try {
             // Lấy dữ liệu từ localStorage
             const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+            if (!schedules.length) {
+                console.warn('No schedules found in localStorage.');
+            }
             
             // Nhóm các lịch theo giáo viên
             const teacherSchedules = schedules.reduce((acc, schedule) => {
@@ -182,8 +176,13 @@ ${schedules.map(schedule => `
             status: this.statusFilter.value
         };
 
+        console.log('Applying filters:', filters); // Debugging line
+
         try {
             const filteredSchedules = await this.fetchFilteredSchedules(filters);
+            if (!filteredSchedules.length) {
+                console.warn('No filtered schedules found.');
+            }
             this.renderScheduleList(filteredSchedules);
         } catch (error) {
             console.error('Error applying filters:', error);
@@ -193,8 +192,8 @@ ${schedules.map(schedule => `
     async viewScheduleDetail(teacherId) {
         console.log(`Viewing schedule for teacher ID: ${teacherId}`);
         try {
-            // Lấy dữ liệu từ localStorage
             const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+            console.log('Schedules:', schedules); // Kiểm tra dữ liệu
             const scheduleDetail = schedules.find(schedule => schedule.teacherId === teacherId);
             
             if (!scheduleDetail) {
@@ -216,63 +215,23 @@ ${schedules.map(schedule => `
             <div class="modal-content">
                 <span class="close" onclick="adminSchedule.closeModal()">&times;</span>
                 <h2>Chi tiết lịch trống</h2>
-                
                 <div class="schedule-detail-info">
-                    <div class="info-group">
-                        <p><strong>Giáo viên:</strong> ${scheduleDetail.teacherName}</p>
-                        <p><strong>Email:</strong> ${scheduleDetail.teacherId}</p>
-                        <p><strong>Cập nhật cuối:</strong> ${this.formatDate(scheduleDetail.lastUpdate)}</p>
-                        <p><strong>Số slot trống:</strong> ${scheduleDetail.availableSlots} slots</p>
-                        <p><strong>Trạng thái:</strong> 
-                            <span class="status-badge status-${scheduleDetail.approvalStatus}">
-                                ${this.getApprovalStatusText(scheduleDetail.approvalStatus)}
-                            </span>
-                        </p>
-                    </div>
-
-                    <div class="schedule-slots">
-                        <h3>Các khung giờ trống</h3>
-                        <div class="slots-list">
-                            ${scheduleDetail.slots ? scheduleDetail.slots.map(slot => `
-                                <div class="slot-item">
-                                    <span class="slot-time">${slot.time}</span>
-                                    <span class="slot-date">${this.formatDate(slot.date)}</span>
-                                </div>
-                            `).join('') : '<p>Không có thông tin khung giờ</p>'}
-                        </div>
-                    </div>
-
-                    ${scheduleDetail.note ? `
-                        <div class="schedule-note">
-                            <h3>Ghi chú</h3>
-                            <p>${scheduleDetail.note}</p>
-                        </div>
-                    ` : ''}
-
-                    <div class="action-buttons">
-                        ${scheduleDetail.approvalStatus === 'pending' ? `
-                            <button class="btn-approve" onclick="adminSchedule.approveSchedule('${scheduleDetail.teacherId}')">
-                                <i class="fas fa-check"></i> Duyệt
-                            </button>
-                            <button class="btn-reject" onclick="adminSchedule.rejectSchedule('${scheduleDetail.teacherId}')">
-                                <i class="fas fa-times"></i> Từ chối
-                            </button>
-                        ` : ''}
-                        <button class="btn-close" onclick="adminSchedule.closeModal()">
-                            <i class="fas fa-times"></i> Đóng
-                        </button>
-                    </div>
+                    <p><strong>Giáo viên:</strong> ${scheduleDetail.teacherName}</p>
+                    <p><strong>Cập nhật cuối:</strong> ${this.formatDate(scheduleDetail.lastUpdate)}</p>
+                    <p><strong>Số slot trống:</strong> ${scheduleDetail.availableSlots} slots</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="status-badge status-${scheduleDetail.approvalStatus}">
+                            ${this.getApprovalStatusText(scheduleDetail.approvalStatus)}
+                        </span>
+                    </p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-close" onclick="adminSchedule.closeModal()">
+                        <i class="fas fa-times"></i> Đóng
+                    </button>
                 </div>
             </div>
         `;
-        // Thêm sự kiện đóng modal
-        this.modal.querySelector('.close').onclick = () => this.closeModal();
-        // Thêm style cho modal
-        const modalContent = this.modal.querySelector('.modal-content');
-        modalContent.style.maxWidth = '600px';
-        modalContent.style.width = '100%';
-        modalContent.style.maxHeight = '80vh';
-        modalContent.style.overflowY = 'auto';
     }
 
     async sendReminder(teacherId) {

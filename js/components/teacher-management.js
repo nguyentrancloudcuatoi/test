@@ -11,15 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Thay đổi cách khởi tạo danh sách giáo viên
     let teachers = JSON.parse(localStorage.getItem('teachers')) || [
-        { email: "nguyenvana@gmail.com", name: "Nguyễn Văn A", subject: "BFB", passwords: "vana123@656", status: "Đang dạy" },
-        { email: "tranthib@gmail.com", name: "Trần Thị B", subject: "FB", passwords: "vana123@656", status: "Đang dạy" },
-        { email: "levanc@gmail.com", name: "Lê Văn C", subject: "Toeic", passwords: "vana123@656", status: "Đang dạy" },
+        { email: "nguyenvana@gmail.com", name: "Nguyễn Văn A", classCode: "BFB", passwords: "vana123@656", status: "Đang dạy" },
+        { email: "tranthib@gmail.com", name: "Trần Thị B", classCode: "FB", passwords: "vana123@656", status: "Đang dạy" },
+        { email: "levanc@gmail.com", name: "Lê Văn C", classCode: "Toeic", passwords: "vana123@656", status: "Đang dạy" },
     ];
 
     teachers = teachers.map(teacher => ({
         email: teacher.email,
         name: teacher.name,
-        classCode: teacher.subject, // Rename subject to classCode
+        classCode: teacher.classCode, // Rename subject to classCode
         passwords: teacher.passwords,
         status: teacher.status
     }));
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3>Thêm giáo viên mới</h3>
             <input type="email" id="teacherEmail" placeholder="Nhập email giáo viên" required />
             <input type="text" id="teacherName" placeholder="Nhập tên giáo viên" required />
-            <input type="text" id="teacherSubject" placeholder="Nhập mã lớp học" required />
+            <input type="text" id="teacherclassCode" placeholder="Nhập mã lớp học" required />
             <input type="password" id="teacherPasswords" placeholder="Nhập mật khẩu" required />
             <button id="addTeacherConfirm">Thêm giáo viên</button>
             <p id="modal-message"></p>
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <tr>
                         <th style="width: 30%">Email</th>
                         <th style="width: 25%">Tên</th>
-                        <th style="width: 10%">Môn học</th>
+                        <th style="width: 10%">Mã lớp học</th>
                         <th style="width: 15%">Passwords</th>
                         <th style="width: 10%">Trạng thái</th>
                         <th style="width: 15%">Hành động</th>
@@ -142,6 +142,9 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         // Lưu danh sách giáo viên vào localStorage
         localStorage.setItem('teachers', JSON.stringify(teachers));
+
+        // Thêm event để thông báo thay đổi
+        window.dispatchEvent(new Event('storage'));
     }
 
     // Hàm hiển thị modal
@@ -163,10 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.querySelector("#addTeacherConfirm").addEventListener("click", () => {
         const newTeacherEmail = document.getElementById("teacherEmail").value;
         const newTeacherName = document.getElementById("teacherName").value;
-        const newTeacherSubject = document.getElementById("teacherSubject").value;
+        const newTeacherclassCode = document.getElementById("teacherclassCode").value;
         const newTeacherPasswords = document.getElementById("teacherPasswords").value;
 
-        if (newTeacherEmail && newTeacherName && newTeacherSubject && newTeacherPasswords) {
+        if (newTeacherEmail && newTeacherName && newTeacherclassCode && newTeacherPasswords) {
             // Kiểm tra email đã tồn tại chưa
             if (teachers.some(t => t.email === newTeacherEmail)) {
                 alert("Email này đã được sử dụng!");
@@ -176,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const newTeacher = {
                 email: newTeacherEmail,
                 name: newTeacherName,
-                classCode: newTeacherSubject,
+                classCode: newTeacherclassCode,
                 status: "Đang dạy",
                 passwords: newTeacherPasswords
             };
@@ -200,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Clear input fields
             document.getElementById("teacherEmail").value = '';
             document.getElementById("teacherName").value = '';
-            document.getElementById("teacherSubject").value = '';
+            document.getElementById("teacherclassCode").value = '';
             document.getElementById("teacherPasswords").value = '';
 
             alert("Thêm giáo viên thành công! Giáo viên có thể đăng nhập bằng email và mật khẩu đã tạo.");
@@ -231,4 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Hiển thị danh sách giáo viên ban đầu
     displayTeachers();
+
+    // Thêm event để thông báo thay đổi
+    window.dispatchEvent(new Event('storage'));
 }); 

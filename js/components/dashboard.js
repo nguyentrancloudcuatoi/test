@@ -3,6 +3,7 @@ class DashboardManager {
         this.initializeElements();
         this.loadDashboardData();
         this.attachEventListeners();
+        this.initTestNotifications();
     }
 
     initializeElements() {
@@ -39,6 +40,21 @@ class DashboardManager {
                 document.getElementById('username').textContent = currentTeacher.name;
                 document.getElementById('username').style.display = 'block'; // Hiển thị tên giáo viên
             }
+
+            // Lấy thông báo từ localStorage
+            const localStorageNotifications = JSON.parse(localStorage.getItem('teacherNotifications')) || [];
+            
+            // Kết hợp thông báo từ API và localStorage
+            const allNotifications = [
+                ...notifications,
+                ...localStorageNotifications
+            ];
+
+            // Render tất cả thông báo
+            this.renderNotifications(allNotifications);
+
+            // Hiển thị thông báo
+            this.displayNotifications();
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
@@ -64,19 +80,26 @@ class DashboardManager {
     }
 
     async fetchNotifications() {
-        // Simulate API call
+        // Simulate API call với nhiều thông báo hơn
         return [
             {
                 type: 'important',
                 message: 'Cập nhật lịch trống tuần tới',
+                date: new Date().toISOString(),
                 time: '1 giờ trước'
             },
             {
                 type: 'warning',
                 message: 'Điểm danh chưa được duyệt',
+                date: new Date().toISOString(),
                 time: '2 giờ trước'
+            },
+            {
+                type: 'info',
+                message: 'Lịch họp hội đồng giáo viên',
+                date: new Date().toISOString(),
+                time: '3 giờ trước'
             }
-            // More notifications...
         ];
     }
 
@@ -96,14 +119,23 @@ class DashboardManager {
     }
 
     renderNotifications(notifications) {
+        if (!this.notificationList) return;
+        
         this.notificationList.innerHTML = notifications.map(notification => `
-            <div class="notification-item ${notification.type}">
+            <div class="notification-item ${notification.type} custom-notification">
                 <div class="notification-content">
                     <p>${notification.message}</p>
-                    <span>${notification.time}</span>
+                    <span>${notification.time || new Date(notification.date).toLocaleString()}</span>
                 </div>
             </div>
         `).join('');
+
+        // Cập nhật số lượng thông báo chưa đọc
+        const unreadCount = notifications.length;
+        const badge = document.querySelector('.notifications .badge');
+        if (badge) {
+            badge.textContent = unreadCount;
+        }
     }
 
     getActivityIcon(type) {
@@ -124,6 +156,29 @@ class DashboardManager {
 
     updateStats(stats) {
         // Update dashboard statistics
+    }
+
+    displayNotifications() {
+        const notificationList = document.querySelector('.notification-list');
+        const notifications = JSON.parse(localStorage.getItem('teacherNotifications')) || [];
+
+        notificationList.innerHTML = notifications.map(notification => `
+            <div class="notification-item ${notification.type} custom-notification">
+                <p>${notification.message}</p>
+                <span>${new Date(notification.date).toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+
+    initTestNotifications() {
+        const testNotifications = [
+            {
+                type: 'important',
+                message: 'Thông báo test từ localStorage',
+                date: new Date().toISOString()
+            }
+        ];
+        localStorage.setItem('teacherNotifications', JSON.stringify(testNotifications));
     }
 }
 

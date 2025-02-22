@@ -59,6 +59,8 @@ class ScheduleManager {
         document.getElementById('saveSlot').addEventListener('click', () => this.saveSlotDetails());
         document.getElementById('saveSchedule').addEventListener('click', () => this.showSubmitModal());
         document.getElementById('confirmSubmit').addEventListener('click', () => this.submitSchedule());
+        
+        // Ensure the cancel button is properly linked
         document.getElementById('cancelSubmit').addEventListener('click', () => this.closeModals());
     }
 
@@ -289,6 +291,19 @@ class ScheduleManager {
 
     // Helper methods
     closeModals() {
+        // Clear slot data if canceling from slot modal
+        if (this.slotModal.style.display === 'block' && this.currentEditingSlot) {
+            const [date, time] = this.currentEditingSlot.split('-');
+            const slotElement = this.findSlotElement(date, time);
+            if (slotElement) {
+                // Remove the slot from selectedSlots
+                this.selectedSlots.delete(this.currentEditingSlot);
+                // Reset the slot's appearance
+                slotElement.className = 'schedule-slot';
+            }
+            this.currentEditingSlot = null;
+        }
+
         this.slotModal.style.display = 'none';
         this.submitModal.style.display = 'none';
     }

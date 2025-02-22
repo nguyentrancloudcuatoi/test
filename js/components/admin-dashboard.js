@@ -5,6 +5,7 @@ class AdminDashboardManager {
         this.initializeElements();
         this.loadDashboardData();
         this.attachEventListeners();
+        this.updateTeacherCount();
     }
 
     initializeElements() {
@@ -151,9 +152,44 @@ class AdminDashboardManager {
     async exportReport() {
         // Implement report export
     }
+
+    updateTeacherCount() {
+        // Lấy danh sách giáo viên từ localStorage
+        const teachers = JSON.parse(localStorage.getItem('teachers')) || [];
+        
+        // Lấy số lượng giáo viên đang hoạt động
+        const activeTeachers = teachers.filter(teacher => teacher.status === "Đang dạy").length;
+        
+        // Cập nhật số liệu trên dashboard
+        const teacherCountElement = document.querySelector('.stat-card .stat-details .stat-number');
+        if (teacherCountElement) {
+            teacherCountElement.textContent = activeTeachers;
+        }
+    }
 }
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new AdminDashboardManager();
+});
+
+// Lấy số điểm danh chưa duyệt từ localStorage
+function updatePendingAttendanceCount() {
+    const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+    const pendingCount = attendanceRecords.filter(record => record.status === 'pending').length;
+
+    // Cập nhật số lượng điểm danh chưa duyệt vào giao diện
+    const pendingCountElement = document.querySelector('.stat-number'); // Chọn phần tử hiển thị số lượng
+    pendingCountElement.textContent = pendingCount; // Cập nhật nội dung
+}
+
+// Gọi hàm khi trang được tải
+document.addEventListener('DOMContentLoaded', updatePendingAttendanceCount);
+
+// Thêm event listener để cập nhật khi có thay đổi trong localStorage
+window.addEventListener('storage', () => {
+    const adminDashboard = document.querySelector('.admin-dashboard');
+    if (adminDashboard) {
+        adminDashboard.updateTeacherCount();
+    }
 }); 

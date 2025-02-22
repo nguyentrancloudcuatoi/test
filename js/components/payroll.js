@@ -40,7 +40,10 @@ class PayrollManager {
         // Export button
         const exportButton = document.getElementById('exportPayslip');
         if (exportButton) {
-            exportButton.addEventListener('click', () => this.exportPayslip());
+            exportButton.addEventListener('click', () => {
+                console.log('Nút xuất phiếu lương đã được nhấn'); // Kiểm tra sự kiện
+                this.exportPayslip();
+            });
         }
         
         // Toast close button
@@ -167,14 +170,49 @@ class PayrollManager {
 
     async exportPayslip() {
         try {
-            const data = await this.fetchPayslipData();
-            // Handle payslip export
-            console.log('Exporting payslip:', data);
+            const data = await this.fetchPayslipData(); // Lấy dữ liệu phiếu lương
+            const exportData = this.prepareExportData(data); // Chuẩn bị dữ liệu cho Excel
+            this.downloadExcelFile(exportData); // Xuất file Excel
             alert("Xuất phiếu lương thành công!");
         } catch (error) {
             console.error('Error exporting payslip:', error);
             this.showToast('Không thể xuất phiếu lương. Vui lòng thử lại sau.');
         }
+    }
+
+    prepareExportData(data) {
+        // Chuyển đổi dữ liệu thành định dạng phù hợp cho Excel
+        const exportData = [
+            ['Tên Giáo Viên', 'Tổng Lương', 'Giờ Dạy', 'Phụ Cấp'], // Header
+            ...data.map(item => [
+                item.teacherName,
+                item.totalSalary,
+                item.totalHours,
+                item.allowance
+            ])
+        ];
+        return exportData;
+    }
+
+    downloadExcelFile(data) {
+        console.log('Dữ liệu xuất file:', data); // Kiểm tra dữ liệu xuất
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, "Phiếu Lương");
+        const timestamp = new Date().toISOString().split('T')[0];
+        const fileName = `phieu_luong_${timestamp}.xlsx`;
+        console.log('Tên file:', fileName); // Kiểm tra tên file
+        XLSX.writeFile(wb, fileName);
+    }
+
+    async fetchPayslipData() {
+        // Giả lập việc lấy dữ liệu
+        const data = [
+            { teacherName: 'Nguyễn Văn A', totalSalary: 10000000, totalHours: 160, allowance: 2000000 },
+            { teacherName: 'Trần Thị B', totalSalary: 12000000, totalHours: 180, allowance: 2500000 }
+        ];
+        console.log('Dữ liệu phiếu lương:', data); // Kiểm tra dữ liệu
+        return data;
     }
 }
 
