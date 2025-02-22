@@ -502,3 +502,151 @@
     margin-block: 40px;
     margin-bottom: 1.5rem;
 }
+
+.detail-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detail-section h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 1.2em;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.student-attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.student-attendance-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #ddd;
+}
+
+.student-attendance-item.present {
+    border-left-color: #28a745;
+}
+
+.student-attendance-item.absent {
+    border-left-color: #dc3545;
+}
+
+.student-attendance-item.late {
+    border-left-color: #ffc107;
+}
+
+.student-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.status-badge.status-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-absent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.status-late {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.student-note {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.teacher-note {
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 50px auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    border-radius: 8px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #666;
+}
+
+.close-modal:hover {
+    color: #000;
+}
+
+.modal-header {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}

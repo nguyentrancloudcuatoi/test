@@ -47,85 +47,33 @@ class AdminAttendanceManager {
     }
 
     async loadInitialData() {
-        // Dữ liệu mẫu
-        const sampleAttendances = [
-            {
-                id: '1',
-                teacherId: 'GV001',
-                teacherName: 'Nguyễn Văn A',
-                classCode: 'TOEIC-A1',
-                vietnameseTime: '20/03/2024 09:00',
-                status: 'pending',
-                duration: '120',
-                students: [
-                    { name: 'Học sinh 1', status: 'present', note: '' },
-                    { name: 'Học sinh 2', status: 'absent', note: 'Ốm' },
-                    { name: 'Học sinh 3', status: 'late', note: 'Đến muộn 15 phút' }
-                ]
-            },
-            {
-                id: '2',
-                teacherId: 'GV002',
-                teacherName: 'Trần Thị B',
-                classCode: 'IELTS-B2',
-                vietnameseTime: '20/03/2024 14:30',
-                status: 'approved',
-                duration: '180',
-                students: [
-                    { name: 'Học sinh 4', status: 'present', note: '' },
-                    { name: 'Học sinh 5', status: 'present', note: '' },
-                    { name: 'Học sinh 6', status: 'present', note: '' }
-                ]
-            },
-            {
-                id: '3',
-                teacherId: 'GV003',
-                teacherName: 'Lê Văn C',
-                classCode: 'SPEAKING-C1',
-                vietnameseTime: '20/03/2024 18:00',
-                status: 'rejected',
-                duration: '90',
-                students: [
-                    { name: 'Học sinh 7', status: 'absent', note: 'Không báo lý do' },
-                    { name: 'Học sinh 8', status: 'present', note: '' }
-                ]
-            },
-            {
-                id: '4',
-                teacherId: 'GV004',
-                teacherName: 'Phạm Thị D',
-                classCode: 'GRAMMAR-A2',
-                vietnameseTime: '21/03/2024 08:00',
-                status: 'pending',
-                duration: '120',
-                students: [
-                    { name: 'Học sinh 9', status: 'present', note: '' },
-                    { name: 'Học sinh 10', status: 'late', note: 'Đến muộn 10 phút' }
-                ]
-            },
-            {
-                id: '5',
-                teacherId: 'GV005',
-                teacherName: 'Hoàng Văn E',
-                classCode: 'WRITING-B1',
-                vietnameseTime: '21/03/2024 15:30',
-                status: 'approved',
-                duration: '150',
-                students: [
-                    { name: 'Học sinh 11', status: 'present', note: '' },
-                    { name: 'Học sinh 12', status: 'present', note: '' },
-                    { name: 'Học sinh 13', status: 'absent', note: 'Bận việc gia đình' }
-                ]
+        // Lấy danh sách giáo viên từ localStorage
+        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+        
+        // Populate teacher filter với option mặc định
+        this.teacherFilter.innerHTML = `
+            <option value="">Tất cả giáo viên</option>
+            ${teachers.map(teacher => `
+                <option value="${teacher.email}">${teacher.name} (${teacher.email})</option>
+            `).join('')}
+        `;
+
+        // Lấy dữ liệu điểm danh từ localStorage
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+        
+        // Thêm thông tin giáo viên vào mỗi bản ghi điểm danh
+        attendanceRecords = attendanceRecords.map(record => {
+            const teacher = teachers.find(t => t.email === record.teacherId);
+            if (teacher) {
+                record.teacherName = teacher.name;
             }
-        ];
+            return record;
+        });
 
-        // Lưu dữ liệu mẫu vào localStorage nếu chưa có dữ liệu
-        if (!localStorage.getItem('attendanceRecords')) {
-            localStorage.setItem('attendanceRecords', JSON.stringify(sampleAttendances));
-        }
+        // Lưu lại dữ liệu đã được cập nhật
+        localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
 
-        // Lấy dữ liệu từ localStorage
-        const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+        // Hiển thị dữ liệu ban đầu
         this.renderAttendanceList(attendanceRecords);
         this.updateStatistics(attendanceRecords);
     }
@@ -135,7 +83,7 @@ class AdminAttendanceManager {
         tbody.innerHTML = attendances.map(attendance => `
             <tr data-attendance-id="${attendance.id}">
                 <td>${attendance.teacherId}</td>
-                <td>${attendance.teacherName}</td>
+                <td>${attendance.teacherName || 'N/A'}</td>
                 <td>${attendance.classCode}</td>
                 <td>${attendance.vietnameseTime}</td>
                 <td>
@@ -144,7 +92,7 @@ class AdminAttendanceManager {
                     </span>
                 </td>
                 <td class="action-buttons">
-                    <button class="btn-view" onclick="adminAttendance.viewDetails('${attendance.id}')">
+                    <button class="btn-view" onclick="adminAttendance.viewAttendanceDetail('${attendance.id}')">
                         <i class="fas fa-eye"></i> Xem
                     </button>
                     ${attendance.status === 'pending' ? `
@@ -157,7 +105,11 @@ class AdminAttendanceManager {
                     ` : ''}
                 </td>
             </tr>
-        `).join('');
+        `).join('') || `
+            <tr>
+                <td colspan="6" class="text-center">Không có dữ liệu điểm danh</td>
+            </tr>
+        `;
     }
 
     renderWorkloadSummary(workloads) {
@@ -197,33 +149,56 @@ class AdminAttendanceManager {
         this.modalBody.innerHTML = `
             <div class="detail-section">
                 <h3>Thông tin buổi học</h3>
-                <p><strong>Lớp:</strong> ${detail.className}</p>
-                <p><strong>Thời gian:</strong> ${this.formatDateTime(detail.datetime)}</p>
-                <p><strong>Nội dung:</strong> ${detail.content}</p>
-                <p><strong>Bài tập:</strong> ${detail.homework}</p>
-                ${detail.recordingLink ? `
-                    <p><strong>Recording:</strong> <a href="${detail.recordingLink}" target="_blank">Xem recording</a></p>
-                ` : ''}
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Giáo viên:</strong>
+                        <span>${detail.teacherName}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Lớp:</strong>
+                        <span>${detail.classCode}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Thời gian:</strong>
+                        <span>${detail.vietnameseTime}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Thời lượng:</strong>
+                        <span>${detail.duration} phút</span>
+                    </div>
+                </div>
             </div>
+
             <div class="detail-section">
                 <h3>Điểm danh học sinh</h3>
                 <div class="student-attendance-list">
                     ${detail.students.map(student => `
-                        <div class="student-attendance-item">
-                            <span>${student.name}</span>
-                            <span class="status-${student.status}">${this.getStudentStatusText(student.status)}</span>
-                            ${student.note ? `<span class="note">${student.note}</span>` : ''}
+                        <div class="student-attendance-item ${student.status}">
+                            <div class="student-info">
+                                <span class="student-name">${student.name}</span>
+                                <span class="status-badge status-${student.status}">
+                                    ${this.getStudentStatusText(student.status)}
+                                </span>
+                            </div>
+                            ${student.note ? `
+                                <div class="student-note">
+                                    <i class="fas fa-comment"></i>
+                                    <span>${student.note}</span>
+                                </div>
+                            ` : ''}
                         </div>
                     `).join('')}
                 </div>
             </div>
-            ${detail.notes ? `
+
+            ${detail.note ? `
                 <div class="detail-section">
-                    <h3>Ghi chú</h3>
-                    <p>${detail.notes}</p>
+                    <h3>Ghi chú của giáo viên</h3>
+                    <p class="teacher-note">${detail.note}</p>
                 </div>
             ` : ''}
         `;
+        
         this.reviewModal.style.display = 'block';
     }
 
@@ -244,33 +219,17 @@ class AdminAttendanceManager {
 
             // Cập nhật trạng thái
             attendanceData[index].status = isApproved ? 'approved' : 'rejected';
+            attendanceData[index].approvalDate = new Date().toISOString();
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceData));
             
             // Cập nhật UI
-            const row = document.querySelector(`tr[data-attendance-id="${attendanceId}"]`);
-            if (row) {
-                const statusCell = row.querySelector('.status-badge');
-                const actionsCell = row.querySelector('.action-buttons');
-                
-                statusCell.className = `status-badge status-${attendanceData[index].status}`;
-                statusCell.textContent = this.getStatusText(attendanceData[index].status);
-                
-                // Cập nhật nút tác vụ
-                actionsCell.innerHTML = `
-                    <button class="btn-view" onclick="adminAttendance.viewDetails('${attendanceId}')">
-                        <i class="fas fa-eye"></i> Xem
-                    </button>
-                `;
-            }
-
-            // Cập nhật thống kê
-            this.updateStatistics(attendanceData);
-            
-            // Đóng modal
-            this.closeModal();
+            await this.updateUIAfterApproval(attendanceData, attendanceId);
             
             // Hiển thị thông báo
             alert(isApproved ? 'Đã phê duyệt điểm danh!' : 'Đã từ chối điểm danh!');
+            
+            // Đóng modal nếu đang mở
+            this.closeModal();
         } catch (error) {
             console.error('Error handling approval:', error);
             alert('Có lỗi xảy ra khi xử lý phê duyệt!');
@@ -291,7 +250,7 @@ class AdminAttendanceManager {
             
             // Cập nhật nút tác vụ - chỉ giữ lại nút xem chi tiết
             actionsCell.innerHTML = `
-                <button class="btn-view" onclick="adminAttendance.viewDetails('${attendance.id}')">
+                <button class="btn-view" onclick="adminAttendance.viewAttendanceDetail('${attendance.id}')">
                     <i class="fas fa-eye"></i> Xem
                 </button>
             `;
@@ -358,31 +317,87 @@ class AdminAttendanceManager {
     }
 
     handleTimeFilterChange() {
-        const showCustomRange = this.timeFilter.value === 'custom';
-        this.dateRangeContainer.style.display = showCustomRange ? 'grid' : 'none';
+        const selectedValue = this.timeFilter.value;
+        
+        if (selectedValue === 'custom') {
+            this.dateRangeContainer.style.display = 'flex';
+        } else {
+            this.dateRangeContainer.style.display = 'none';
+            
+            const today = new Date();
+            let startDate = new Date();
+            
+            if (selectedValue === 'week') {
+                startDate.setDate(today.getDate() - 7);
+            } else if (selectedValue === 'month') {
+                startDate.setDate(today.getDate() - 30);
+            }
+            
+            this.startDate.value = startDate.toISOString().split('T')[0];
+            this.endDate.value = today.toISOString().split('T')[0];
+        }
+        
         this.applyFilters();
     }
 
     async applyFilters() {
-        const filters = {
-            teacherId: this.teacherFilter.value,
-            status: this.statusFilter.value,
-            timeRange: this.timeFilter.value,
-            startDate: this.startDate.value,
-            endDate: this.endDate.value
-        };
-
         try {
-            const [attendances, workloads] = await Promise.all([
-                this.fetchFilteredAttendances(filters),
-                this.fetchFilteredWorkloads(filters)
-            ]);
+            // Lấy dữ liệu từ localStorage
+            const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+            
+            // Lấy giá trị các filter
+            const filters = {
+                teacherId: this.teacherFilter.value,
+                status: this.statusFilter.value,
+                timeRange: this.timeFilter.value,
+                startDate: this.startDate.value,
+                endDate: this.endDate.value
+            };
 
-            this.renderAttendanceList(attendances);
-            this.renderWorkloadSummary(workloads);
-            this.updateStatistics(attendances);
+            // Lọc dữ liệu
+            const filteredRecords = attendanceRecords.filter(record => {
+                // Lọc theo giáo viên
+                if (filters.teacherId && record.teacherId !== filters.teacherId) {
+                    return false;
+                }
+
+                // Lọc theo trạng thái
+                if (filters.status && record.status !== filters.status) {
+                    return false;
+                }
+
+                // Lọc theo thời gian
+                const recordDate = new Date(record.vietnameseTime);
+                const today = new Date();
+
+                if (filters.timeRange === 'week') {
+                    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    if (recordDate < weekAgo || recordDate > today) {
+                        return false;
+                    }
+                } else if (filters.timeRange === 'month') {
+                    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    if (recordDate < monthAgo || recordDate > today) {
+                        return false;
+                    }
+                } else if (filters.timeRange === 'custom' && filters.startDate && filters.endDate) {
+                    const start = new Date(filters.startDate);
+                    const end = new Date(filters.endDate);
+                    if (recordDate < start || recordDate > end) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Cập nhật UI
+            this.renderAttendanceList(filteredRecords);
+            this.updateStatistics(filteredRecords);
+
         } catch (error) {
             console.error('Error applying filters:', error);
+            alert('Có lỗi xảy ra khi lọc dữ liệu!');
         }
     }
 
@@ -610,6 +625,23 @@ class AdminAttendanceManager {
         } catch (error) {
             console.error('Error exporting workload report:', error);
             alert('Có lỗi xảy ra khi xuất báo cáo!');
+        }
+    }
+
+    async fetchAttendanceDetail(attendanceId) {
+        try {
+            // Lấy dữ liệu từ localStorage
+            const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+            const detail = attendanceRecords.find(record => record.id === attendanceId);
+            
+            if (!detail) {
+                throw new Error('Không tìm thấy thông tin điểm danh');
+            }
+            
+            return detail;
+        } catch (error) {
+            console.error('Error fetching attendance detail:', error);
+            throw error;
         }
     }
 }

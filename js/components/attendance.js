@@ -36,10 +36,17 @@ class AttendanceManager {
     async submitAttendance() {
         try {
             const formData = new FormData(document.getElementById('attendanceForm'));
+            
+            // Lấy thông tin giáo viên từ session storage
+            const currentTeacher = JSON.parse(sessionStorage.getItem('currentTeacher'));
+            if (!currentTeacher) {
+                throw new Error('Không tìm thấy thông tin giáo viên');
+            }
+
             const attendanceRecord = {
                 id: Date.now().toString(),
-                teacherId: '123', // Thay bằng ID thực của giáo viên
-                teacherName: 'Nguyễn Văn A', // Thay bằng tên thực của giáo viên
+                teacherId: currentTeacher.email,
+                teacherName: currentTeacher.name,
                 classCode: formData.get('classCode'),
                 vietnameseTime: new Date().toLocaleString('vi-VN'),
                 teachingMethod: formData.get('teachingMethod'),

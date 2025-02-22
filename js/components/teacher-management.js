@@ -2,12 +2,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const teacherList = document.getElementById("teacherList");
     const addTeacherButton = document.getElementById("addTeacher");
 
-    // Dữ liệu giả lập cho danh sách giáo viên
-    const teachers = [
-        { id: 1341, name: "Nguyễn Văn A", subject: "BFB", passwords: "vana123@656", status: "Đang dạy" },
-        { id: 2241, name: "Trần Thị B", subject: "FB", passwords: "vana123@656", status: "Đang dạy" },
-        { id: 3721, name: "Lê Văn C", subject: "Toeic", passwords: "vana123@656", status: "Đang dạy" },
+    // Lấy thông tin giáo viên từ sessionStorage
+    const currentTeacher = JSON.parse(sessionStorage.getItem('currentTeacher'));
+    if (currentTeacher) {
+        console.log(`Giáo viên đang đăng nhập: ${currentTeacher.name}`);
+        // Có thể hiển thị tên giáo viên ở đây nếu cần
+    }
+
+    // Thay đổi cách khởi tạo danh sách giáo viên
+    let teachers = JSON.parse(localStorage.getItem('teachers')) || [
+        { email: "nguyenvana@gmail.com", name: "Nguyễn Văn A", subject: "BFB", passwords: "vana123@656", status: "Đang dạy" },
+        { email: "tranthib@gmail.com", name: "Trần Thị B", subject: "FB", passwords: "vana123@656", status: "Đang dạy" },
+        { email: "levanc@gmail.com", name: "Lê Văn C", subject: "Toeic", passwords: "vana123@656", status: "Đang dạy" },
     ];
+
+    teachers = teachers.map(teacher => ({
+        email: teacher.email,
+        name: teacher.name,
+        classCode: teacher.subject, // Rename subject to classCode
+        passwords: teacher.passwords,
+        status: teacher.status
+    }));
 
     // Thêm HTML cho modal nhập thông tin giáo viên
     const modal = document.createElement("div");
@@ -17,10 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3>Thêm giáo viên mới</h3>
-            <input type="text" id="teacherID" placeholder="Nhập ID giáo viên" />
-            <input type="text" id="teacherName" placeholder="Nhập tên giáo viên" />
-            <input type="text" id="teacherSubject" placeholder="Nhập môn học" />
-            <input type="text" id="teacherPasswords" placeholder="Nhập Passwords" />
+            <input type="email" id="teacherEmail" placeholder="Nhập email giáo viên" required />
+            <input type="text" id="teacherName" placeholder="Nhập tên giáo viên" required />
+            <input type="text" id="teacherSubject" placeholder="Nhập mã lớp học" required />
+            <input type="password" id="teacherPasswords" placeholder="Nhập mật khẩu" required />
             <button id="addTeacherConfirm">Thêm giáo viên</button>
             <p id="modal-message"></p>
         </div>
@@ -66,6 +81,20 @@ document.addEventListener("DOMContentLoaded", () => {
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
         button {
             background-color: #4CAF50; /* Màu nền cho nút */
             color: white; /* Màu chữ */
@@ -87,28 +116,32 @@ document.addEventListener("DOMContentLoaded", () => {
             <table class="teacher-table">
                 <thead>
                     <tr>
-                        <th style="width: 15%">ID</th>
+                        <th style="width: 30%">Email</th>
                         <th style="width: 25%">Tên</th>
-                        <th style="width: 20%">Môn học</th>
-                        <th style="width: 25%">Passwords</th>
+                        <th style="width: 10%">Môn học</th>
+                        <th style="width: 15%">Passwords</th>
+                        <th style="width: 10%">Trạng thái</th>
                         <th style="width: 15%">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${teachers.map(teacher => `
                         <tr>
-                            <td>${teacher.id}</td>
+                            <td>${teacher.email}</td>
                             <td>${teacher.name}</td>
-                            <td>${teacher.subject}</td>
+                            <td>${teacher.classCode}</td>
                             <td>${teacher.passwords}</td>
+                            <td>${teacher.status}</td>
                             <td>
-                                <button class="btn-delete" data-teacher-id="${teacher.id}">Xóa</button>
+                                <button class="btn-delete" data-teacher-email="${teacher.email}">Xóa</button>
                             </td>
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
         `;
+        // Lưu danh sách giáo viên vào localStorage
+        localStorage.setItem('teachers', JSON.stringify(teachers));
     }
 
     // Hàm hiển thị modal
@@ -128,30 +161,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Xử lý thêm giáo viên khi nhấn nút xác nhận
     modal.querySelector("#addTeacherConfirm").addEventListener("click", () => {
-        const newTeacherID = parseInt(document.getElementById("teacherID").value);
+        const newTeacherEmail = document.getElementById("teacherEmail").value;
         const newTeacherName = document.getElementById("teacherName").value;
         const newTeacherSubject = document.getElementById("teacherSubject").value;
         const newTeacherPasswords = document.getElementById("teacherPasswords").value;
 
-        if (newTeacherName && newTeacherSubject) {
-            // Tạo ID mới nếu không có ID được nhập vào
-            const maxId = Math.max(...teachers.map(t => t.id), 0);
+        if (newTeacherEmail && newTeacherName && newTeacherSubject && newTeacherPasswords) {
+            // Kiểm tra email đã tồn tại chưa
+            if (teachers.some(t => t.email === newTeacherEmail)) {
+                alert("Email này đã được sử dụng!");
+                return;
+            }
+
             const newTeacher = {
-                id: newTeacherID || (maxId + 1), // Sử dụng ID lớn nhất hiện tại + 1
+                email: newTeacherEmail,
                 name: newTeacherName,
-                subject: newTeacherSubject,
+                classCode: newTeacherSubject,
                 status: "Đang dạy",
-                passwords: newTeacherPasswords || "default123"
+                passwords: newTeacherPasswords
             };
+
+            // Thêm giáo viên mới vào mảng
             teachers.push(newTeacher);
+
+            // Lưu vào localStorage để có thể đăng nhập
+            const teacherAccounts = JSON.parse(localStorage.getItem('teacherAccounts') || '[]');
+            teacherAccounts.push({
+                email: newTeacherEmail,
+                password: newTeacherPasswords,
+                role: 'teacher'
+            });
+            localStorage.setItem('teacherAccounts', JSON.stringify(teacherAccounts));
+
+            // Cập nhật giao diện
             displayTeachers();
             modal.style.display = "none";
             
             // Clear input fields
-            document.getElementById("teacherID").value = '';
+            document.getElementById("teacherEmail").value = '';
             document.getElementById("teacherName").value = '';
             document.getElementById("teacherSubject").value = '';
             document.getElementById("teacherPasswords").value = '';
+
+            alert("Thêm giáo viên thành công! Giáo viên có thể đăng nhập bằng email và mật khẩu đã tạo.");
         } else {
             alert("Vui lòng nhập đầy đủ thông tin giáo viên!");
         }
@@ -160,11 +212,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add event delegation for delete buttons
     teacherList.addEventListener("click", (e) => {
         if (e.target.classList.contains("btn-delete")) {
-            const id = parseInt(e.target.dataset.teacherId);
-            const index = teachers.findIndex(teacher => teacher.id === id);
+            const email = e.target.dataset.teacherEmail;
+            const index = teachers.findIndex(teacher => teacher.email === email);
             if (index > -1) {
+                // Xóa tài khoản giáo viên khỏi teacherAccounts
+                const teacherAccounts = JSON.parse(localStorage.getItem('teacherAccounts') || '[]');
+                const accountIndex = teacherAccounts.findIndex(account => account.email === email);
+                if (accountIndex > -1) {
+                    teacherAccounts.splice(accountIndex, 1);
+                    localStorage.setItem('teacherAccounts', JSON.stringify(teacherAccounts));
+                }
+                
                 teachers.splice(index, 1);
-                displayTeachers();
+                displayTeachers(); // Sẽ tự động lưu vào localStorage
             }
         }
     });

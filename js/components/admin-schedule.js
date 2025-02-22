@@ -53,18 +53,30 @@ class AdminScheduleManager {
     }
 
     async fetchSchedules() {
-        // Simulate API call
-        const sampleSchedules = [
-            {
-                teacherId: 1,
-                teacherName: "Nguyễn Văn A",
-                lastUpdate: "2024-03-15",
-                availableSlots: 12,
-                approvalStatus: "pending"
-            },
-            // Thêm các mẫu khác...
-        ];
-        return sampleSchedules;
+        try {
+            // Lấy dữ liệu từ localStorage
+            const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+            
+            // Nhóm các lịch theo giáo viên
+            const teacherSchedules = schedules.reduce((acc, schedule) => {
+                if (!acc[schedule.teacherId]) {
+                    acc[schedule.teacherId] = {
+                        teacherId: schedule.teacherId,
+                        teacherName: schedule.teacherName,
+                        lastUpdate: schedule.lastUpdate,
+                        availableSlots: 0,
+                        approvalStatus: schedule.approvalStatus
+                    };
+                }
+                acc[schedule.teacherId].availableSlots++;
+                return acc;
+            }, {});
+
+            return Object.values(teacherSchedules);
+        } catch (error) {
+            console.error('Error fetching schedules:', error);
+            return [];
+        }
     }
 
     populateTeacherFilter(teachers) {
@@ -217,8 +229,10 @@ ${schedules.map(schedule => `
         try {
             const data = await this.prepareExportData();
             this.downloadExcelFile(data);
+            alert('Xuất báo cáo thành công!');
         } catch (error) {
             console.error('Error exporting data:', error);
+            alert('Có lỗi xảy ra khi xuất báo cáo!');
         }
     }
 
@@ -243,7 +257,6 @@ ${schedules.map(schedule => `
                 statusBadge.className = 'status-badge status-approved';
                 statusBadge.textContent = 'Đã duyệt';
                 
-                // Ẩn nút duyệt và từ chối
                 actionButtons.innerHTML = `
                     <button class="btn-view" onclick="adminSchedule.viewScheduleDetail(${teacherId})">
                         <i class="fas fa-eye"></i> Xem
@@ -251,16 +264,20 @@ ${schedules.map(schedule => `
                 `;
             }
 
-            // Gọi API để cập nhật trạng thái
-            await fetch(`/api/schedule/approve/${teacherId}`, {
-                method: 'POST'
+            // Cập nhật trong localStorage
+            const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+            const updatedSchedules = schedules.map(schedule => {
+                if (schedule.teacherId === teacherId) {
+                    return { ...schedule, approvalStatus: 'approved' };
+                }
+                return schedule;
             });
+            localStorage.setItem('teacherSchedules', JSON.stringify(updatedSchedules));
             
             alert('Đã duyệt lịch trống thành công!');
         } catch (error) {
             console.error('Error approving schedule:', error);
             alert('Có lỗi xảy ra khi duyệt lịch!');
-            // Reload lại dữ liệu nếu có lỗi
             await this.loadScheduleData();
         }
     }
@@ -302,6 +319,60 @@ ${schedules.map(schedule => `
                 // Reload lại dữ liệu nếu có lỗi
                 await this.loadScheduleData();
             }
+        }
+    }
+
+    async prepareExportData() {
+        try {
+            const schedules = await this.fetchSchedules();
+            
+            // Chuẩn bị dữ liệu cho Excel
+            const exportData = [
+                ['Giáo viên', 'Cập nhật cuối', 'Số slot trống', 'Trạng thái'], // Header
+                ...schedules.map(schedule => [
+                    schedule.teacherName,
+                    this.formatDate(schedule.lastUpdate),
+                    schedule.availableSlots,
+                    this.getApprovalStatusText(schedule.approvalStatus)
+                ])
+            ];
+            
+            return exportData;
+        } catch (error) {
+            console.error('Error preparing export data:', error);
+            throw error;
+        }
+    }
+
+    downloadExcelFile(data) {
+        try {
+            // Tạo workbook mới
+            const wb = XLSX.utils.book_new();
+            
+            // Tạo worksheet từ dữ liệu
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Định dạng độ rộng cột
+            const colWidths = [
+                {wch: 30}, // Tên giáo viên
+                {wch: 15}, // Ngày cập nhật
+                {wch: 15}, // Số slot
+                {wch: 15}, // Trạng thái
+            ];
+            ws['!cols'] = colWidths;
+
+            // Thêm worksheet vào workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Lịch trống giáo viên");
+
+            // Tạo tên file với timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            const fileName = `lich_trong_giao_vien_${timestamp}.xlsx`;
+
+            // Xuất file
+            XLSX.writeFile(wb, fileName);
+        } catch (error) {
+            console.error('Error downloading Excel file:', error);
+            alert('Có lỗi xảy ra khi tải xuống file Excel!');
         }
     }
 }

@@ -41,6 +41,7 @@ class LoginManager {
 
         try {
             const response = await this.authenticateUser(username, password);
+            console.log('Đăng nhập thành công:', response);
             this.redirectUser(response.role);
         } catch (error) {
             this.showError(error.message);
@@ -50,20 +51,40 @@ class LoginManager {
     }
 
     async authenticateUser(username, password) {
-        // Simulate API call
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (username === 'admin@example.com' && password === 'password') {
-                    resolve({ role: 'admin' });
-                } else if (username === 'teacher@example.com' && password === 'password') {
-                    resolve({ role: 'teacher' });
-                } else if (username === 'student@example.com' && password === 'password') {
-                    resolve({ role: 'student' });
-                } else {
-                    reject(new Error('Tài khoản hoặc mật khẩu không chính xác'));
-                }
-            }, 1000);
-        });
+        // Kiểm tra tài khoản admin
+        if (username === 'admin@example.com' && password === 'password') {
+            return { role: 'admin' };
+        }
+
+        // Kiểm tra tài khoản giáo viên từ localStorage
+        const teacherAccounts = JSON.parse(localStorage.getItem('teacherAccounts') || '[]');
+        const teacherAccount = teacherAccounts.find(
+            account => account.email === username && account.password === password
+        );
+
+        if (teacherAccount) {
+            const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+            const teacherDetails = teachers.find(t => t.email === username);
+            if (teacherDetails) {
+                // Lưu thông tin giáo viên vào sessionStorage
+                sessionStorage.setItem('currentTeacher', JSON.stringify({
+                    email: teacherDetails.email,
+                    name: teacherDetails.name,
+                    subject: teacherDetails.classCode
+                }));
+            }
+            return { 
+                role: 'teacher',
+                teacherInfo: teacherDetails
+            };
+        }
+
+        // Kiểm tra tài khoản học sinh
+        if (username === 'student@example.com' && password === 'password') {
+            return { role: 'student' };
+        }
+
+        throw new Error('Tài khoản hoặc mật khẩu không chính xác');
     }
 
     redirectUser(role) {

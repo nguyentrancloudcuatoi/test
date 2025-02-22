@@ -1,22 +1,48 @@
 class ScheduleManager {
     constructor() {
-        this.initializeElements();
-        this.attachEventListeners();
+        this.selectedSlots = new Map();
+        this.scheduleStatus = null;
+        this.currentDate = new Date();
+        this.durations = [30, 40, 45, 50, 60, 70, 75, 90, 120]; // Các option thời lượng
+        this.timeSlots = [];
+        this.selectedDuration = 45; // Mặc định 45 phút
+        this.generateTimeSlotsForDuration(this.selectedDuration);
+        this.initializeComponents();
         this.loadScheduleData();
-        this.checkLastUpdate();
-        this.scheduleStatus = 'pending'; // Thêm trạng thái mặc định
     }
 
-    initializeElements() {
+    initializeComponents() {
+        // Initialize DOM elements
         this.scheduleGrid = document.querySelector('.slots-grid');
         this.currentWeekElement = document.getElementById('currentWeek');
-        this.modal = document.getElementById('slotModal');
-        this.notificationPanel = document.getElementById('notificationPanel');
-        this.scheduleList = document.getElementById("teacherScheduleList"); // Giả sử bạn có bảng này trong HTML
+        this.slotModal = document.getElementById('slotModal');
+        this.submitModal = document.getElementById('scheduleSubmitModal');
+        this.statusBanner = document.getElementById('scheduleStatusBanner');
+
+        // Attach event listeners
+        this.attachEventListeners();
+        this.generateScheduleGrid();
+        this.updateCurrentWeek();
+
+        // Thêm dropdown chọn duration
+        const durationSelect = document.createElement('select');
+        durationSelect.id = 'durationSelect';
+        durationSelect.innerHTML = this.durations.map(d => 
+            `<option value="${d}">${d} phút</option>`
+        ).join('');
+        durationSelect.value = this.selectedDuration;
         
-        // Current date tracking
-        this.currentDate = new Date();
-        this.selectedSlot = null;
+        durationSelect.addEventListener('change', (e) => {
+            this.selectedDuration = parseInt(e.target.value);
+            this.generateTimeSlotsForDuration(this.selectedDuration);
+            this.generateScheduleGrid();
+        });
+
+        // Thêm vào DOM (điều chỉnh vị trí theo layout của bạn)
+        const controlsContainer = document.querySelector('.schedule-controls');
+        if (controlsContainer) {
+            controlsContainer.appendChild(durationSelect);
+        }
     }
 
     attachEventListeners() {
@@ -24,339 +50,428 @@ class ScheduleManager {
         document.getElementById('prevWeek').addEventListener('click', () => this.navigateWeek(-1));
         document.getElementById('nextWeek').addEventListener('click', () => this.navigateWeek(1));
 
-        // View options
-        document.querySelectorAll('.view-options button').forEach(button => {
-            button.addEventListener('click', (e) => this.changeView(e.target.dataset.view));
-        });
-
-        // Save schedule
-        document.getElementById('saveSchedule').addEventListener('click', () => this.saveSchedule());
-
         // Modal events
-        document.querySelector('.modal .close').addEventListener('click', () => this.closeModal());
-        document.getElementById('saveSlot').addEventListener('click', () => this.saveSlotDetails());
-        document.getElementById('cancelSlot').addEventListener('click', () => this.closeModal());
-
-        // Close notification
-        document.querySelector('.close-notification').addEventListener('click', () => {
-            this.notificationPanel.style.display = 'none';
+        document.querySelectorAll('.modal .close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => this.closeModals());
         });
+
+        // Save buttons
+        document.getElementById('saveSlot').addEventListener('click', () => this.saveSlotDetails());
+        document.getElementById('saveSchedule').addEventListener('click', () => this.showSubmitModal());
+        document.getElementById('confirmSubmit').addEventListener('click', () => this.submitSchedule());
+        document.getElementById('cancelSubmit').addEventListener('click', () => this.closeModals());
+    }
+
+    generateScheduleGrid() {
+        // Generate dates for next two weeks
+        const dates = this.generateNextTwoWeeksDates();
+        
+        // Create grid HTML
+        let html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        ${dates.map(date => `<th>${this.formatDate(date)}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // Group time slots by period
+        const periods = ["Sáng", "Chiều", "Tối"];
+        
+        periods.forEach(period => {
+            // Add period header
+            html += `
+                <tr class="period-row">
+                    <td colspan="${dates.length + 1}" class="period-header">${period}</td>
+                </tr>
+            `;
+
+            // Add time slots for this period
+            this.timeSlots
+                .filter(slot => slot.period === period)
+                .forEach(timeSlot => {
+                    html += `
+                        <tr>
+                            <td>${timeSlot.time}</td>
+                            ${dates.map(date => `
+                                <td>
+                                    <div class="schedule-slot" 
+                                        data-date="${this.formatDateForData(date)}"
+                                        data-time="${timeSlot.time}"
+                                        onclick="scheduleManager.openSlotModal('${timeSlot.time}', '${this.formatDateForData(date)}')">
+                                    </div>
+                                </td>
+                            `).join('')}
+                        </tr>
+                    `;
+                });
+        });
+
+        html += '</tbody></table>';
+        this.scheduleGrid.innerHTML = html;
+
+        // Update any existing selections
+        this.updateSlotDisplay();
     }
 
     async loadScheduleData() {
         try {
-            const scheduleData = await this.fetchScheduleData();
-            this.renderSchedule(scheduleData);
-        } catch (error) {
-            console.error('Error loading schedule:', error);
-            alert('Không thể tải lịch. Vui lòng thử lại sau.');
-        }
-    }
+            const currentTeacher = JSON.parse(sessionStorage.getItem('currentTeacher'));
+            console.log('Giáo viên hiện tại:', currentTeacher); // Kiểm tra thông tin giáo viên
 
-    async fetchScheduleData() {
-        // Simulate API call
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve({
-                    timeSlots: this.generateTimeSlots(),
-                    schedule: this.generateMockSchedule()
-                });
-            }, 500);
-        });
-    }
-
-    generateTimeSlots() {
-        const slots = [];
-        for (let hour = 6; hour <= 23; hour++) {
-            slots.push(`${hour}:00`);
-        }
-        return slots;
-    }
-
-    generateMockSchedule() {
-        // Generate mock schedule data
-        return [];
-    }
-
-    renderSchedule(data) {
-        this.renderTimeSlots(data.timeSlots);
-        this.renderDaysHeader();
-        
-        // Thêm hàng trống giữa cột thời gian và cột ngày
-        const emptyRow = document.createElement('div');
-        emptyRow.className = 'empty-row'; // Thêm class để có thể định dạng nếu cần
-        this.scheduleGrid.insertAdjacentElement('afterbegin', emptyRow);
-        
-        this.renderScheduleSlots(data);
-        this.updateCurrentWeek();
-    }
-
-    renderTimeSlots(timeSlots) {
-        const timeSlotsContainer = document.querySelector('.time-slots');
-        timeSlotsContainer.innerHTML = ''; // Clear previous slots
-
-        // Thêm chữ "Time" ở đầu cột thời gian
-        const timeLabel = document.createElement('div');
-        timeLabel.className = 'time-slot';
-        timeLabel.textContent = 'Time'; // Thêm chữ "Time"
-        timeSlotsContainer.appendChild(timeLabel);
-
-        timeSlots.forEach(time => {
-            const slot = document.createElement('div');
-            slot.className = 'time-slot';
-            slot.textContent = time;
-            timeSlotsContainer.appendChild(slot);
-        });
-    }
-
-    renderDaysHeader() {
-        const daysHeader = document.querySelector('.days-header');
-        daysHeader.innerHTML = ''; // Clear previous headers
-        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-        
-        days.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'day-header';
-            dayElement.textContent = day;
-            daysHeader.appendChild(dayElement);
-        });
-    }
-
-    renderScheduleSlots(data) {
-        this.scheduleGrid.innerHTML = '';
-        const totalSlots = data.timeSlots.length * 7; // 7 ngày trong tuần
-
-        for (let day = 0; day < 7; day++) {
-            for (let time = 1; time < data.timeSlots.length; time++) {
-                const slotIndex = day * data.timeSlots.length + time; // Tính chỉ số ô
-                const slot = document.createElement('div');
-                slot.className = 'schedule-slot';
-                slot.style.gridRowStart = time + 1; // Đặt hàng cho ô
-                slot.style.gridColumnStart = day + 1; // Đặt cột cho ô
-                slot.addEventListener('click', () => this.openSlotModal(slotIndex));
-                this.scheduleGrid.appendChild(slot);
+            if (!currentTeacher) {
+                alert('Vui lòng đăng nhập lại');
+                window.location.href = '/pages/index.html'; // Chuyển hướng đến trang đăng nhập
             }
+
+            // Load existing schedules
+            const schedules = JSON.parse(localStorage.getItem('teacherSchedules') || '[]');
+            console.log('Lịch hiện có:', schedules); // Kiểm tra lịch hiện có
+
+            const teacherSchedule = schedules.find(s => 
+                s.teacherId === currentTeacher.email && 
+                s.status === 'pending'
+            );
+
+            if (teacherSchedule) {
+                this.showStatusBanner('pending', 'Lịch của bạn đang chờ admin phê duyệt');
+                // Load existing slots
+                teacherSchedule.slots.forEach(slot => {
+                    const key = `${slot.date}-${slot.time}`;
+                    this.selectedSlots.set(key, {
+                        status: slot.status,
+                        note: slot.note
+                    });
+                });
+                this.updateSlotDisplay();
+
+                // Hiển thị thông tin lịch
+                document.getElementById('scheduleInfo').textContent = `Lịch của bạn đang chờ duyệt: ${teacherSchedule.slots.length} khung giờ.`;
+            } else {
+                document.getElementById('scheduleInfo').textContent = 'Bạn không có lịch nào đang chờ duyệt.';
+            }
+        } catch (error) {
+            console.error('Error loading schedule data:', error);
         }
     }
 
-    openSlotModal(slotTime, slotDate) {
-        document.getElementById("slotTime").textContent = slotTime;
-        document.getElementById("slotDate").textContent = slotDate;
-        this.modal.style.display = "block";
+    updateSlotDisplay() {
+        this.selectedSlots.forEach((value, key) => {
+            const [date, time] = key.split('-');
+            const slotElement = this.findSlotElement(date, time);
+            if (slotElement) {
+                slotElement.className = `schedule-slot ${value.status}`;
+            }
+        });
     }
 
-    getTimeSlotFromIndex(index) {
-        // Calculate time and date from slot index
-        return {
-            time: '8:00',
-            date: '20/03/2024'
-        };
-    }
-
-    closeModal() {
-        this.modal.style.display = "none";
-        document.getElementById('slotNote').value = ''; // Xóa ghi chú khi đóng modal
-        const checkedStatus = document.querySelector('input[name="status"]:checked');
-        if (checkedStatus) {
-            checkedStatus.checked = false; // Bỏ chọn trạng thái
-        }
-    }
-
-    async saveSlotDetails() {
-        const status = document.querySelector('input[name="status"]:checked');
-        const note = document.getElementById('slotNote').value;
-
-        if (!status) {
-            alert('Vui lòng chọn trạng thái.');
+    openSlotModal(time, date) {
+        if (this.scheduleStatus === 'pending') {
+            alert('Bạn đang có lịch chờ duyệt');
             return;
         }
 
-        const slotData = {
-            teacherId: this.getCurrentTeacherId(), // Thêm ID giáo viên
-            time: document.getElementById("slotTime").textContent,
-            date: document.getElementById("slotDate").textContent,
-            status: status.value,
-            note: note,
-            approvalStatus: 'pending' // Thêm trạng thái phê duyệt
-        };
+        const slotKey = `${date}-${time}`;
+        const currentSlot = this.selectedSlots.get(slotKey) || { status: '', note: '' };
 
-        try {
-            await this.saveSlotData(slotData);
-            this.addSlotToTable(slotData);
-            this.closeModal();
-            // Gửi thông báo đến admin
-            await this.notifyAdmin(slotData);
-        } catch (error) {
-            console.error('Error saving slot details:', error);
-            alert('Không thể lưu thông tin khung giờ. Vui lòng thử lại.');
-        }
+        document.getElementById('slotTime').textContent = time;
+        document.getElementById('slotDate').textContent = this.formatDisplayDate(date);
+        
+        // Reset and set current values
+        document.querySelectorAll('input[name="status"]').forEach(radio => {
+            radio.checked = radio.value === currentSlot.status;
+        });
+        document.getElementById('slotNote').value = currentSlot.note || '';
+
+        this.slotModal.style.display = 'block';
+        this.currentEditingSlot = slotKey;
     }
 
-    async saveSlotData(slotData) {
-        // Giả lập lưu dữ liệu (có thể thay thế bằng API thực tế)
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                console.log('Slot data saved:', slotData); // In ra dữ liệu đã lưu
-                resolve();
-            }, 1000);
+    formatDisplayDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     }
 
-    addSlotToTable(slotData) {
-        const slotRow = document.createElement('div');
-        slotRow.className = 'schedule-item'; // Thêm class cho dòng mới
+    saveSlotDetails() {
+        const status = document.querySelector('input[name="status"]:checked')?.value;
+        const note = document.getElementById('slotNote').value;
 
-        // Tạo nội dung cho dòng mới
-        slotRow.innerHTML = `
-            <div class="slot-info">
-                <span>Thời gian: ${slotData.time}</span>
-                <span>Ngày: ${slotData.date}</span>
-                <span>Trạng thái: ${slotData.status}</span>
-                <span>Ghi chú: ${slotData.note}</span>
-            </div>
-        `;
+        if (!status) {
+            alert('Vui lòng chọn trạng thái khung giờ');
+            return;
+        }
 
-        // Thêm dòng mới vào bảng
-        this.scheduleList.appendChild(slotRow);
+        // Save slot data
+        this.selectedSlots.set(this.currentEditingSlot, { status, note });
+
+        // Update UI
+        const [date, time] = this.currentEditingSlot.split('-');
+        const slotElement = this.findSlotElement(date, time);
+        if (slotElement) {
+            slotElement.className = `schedule-slot ${status}`;
+        }
+
+        this.closeModals();
+    }
+
+    async submitSchedule() {
+        try {
+            const currentTeacher = JSON.parse(sessionStorage.getItem('currentTeacher'));
+            if (!currentTeacher) {
+                alert('Vui lòng đăng nhập lại');
+                return;
+            }
+
+            if (this.selectedSlots.size === 0) {
+                alert('Vui lòng chọn ít nhất một khung giờ');
+                return;
+            }
+
+            // Thêm thông tin chi tiết của giáo viên
+            const scheduleData = {
+                id: Date.now().toString(),
+                teacherId: currentTeacher.email,
+                teacherName: currentTeacher.name,
+                teacherPhone: currentTeacher.phone || '',
+                teacherSubjects: currentTeacher.subjects || [],
+                submitDate: new Date().toISOString(),
+                note: document.getElementById('scheduleNote').value,
+                status: 'pending',
+                duration: this.selectedDuration, // Thêm thông tin về thời lượng
+                slots: Array.from(this.selectedSlots.entries()).map(([key, value]) => {
+                    const [date, time] = key.split('-');
+                    return {
+                        date,
+                        time,
+                        ...value,
+                        teacherId: currentTeacher.email,
+                        teacherName: currentTeacher.name
+                    };
+                })
+            };
+
+            // Kiểm tra xem giáo viên đã có lịch pending chưa
+            const schedules = JSON.parse(localStorage.getItem('teacherSchedules') || '[]');
+            const existingPendingSchedule = schedules.find(s => 
+                s.teacherId === currentTeacher.email && 
+                s.status === 'pending'
+            );
+
+            if (existingPendingSchedule) {
+                alert('Bạn đang có lịch chờ duyệt. Vui lòng đợi admin phê duyệt trước khi đăng ký lịch mới.');
+                return;
+            }
+
+            // Lưu vào localStorage
+            schedules.push(scheduleData);
+            localStorage.setItem('teacherSchedules', JSON.stringify(schedules));
+
+            this.scheduleStatus = 'pending';
+            this.closeModals();
+            this.showStatusBanner('pending', 'Lịch của bạn đang chờ admin phê duyệt');
+            
+            // Thông báo thành công
+            alert('Đăng ký lịch trống thành công! Vui lòng đợi admin phê duyệt.');
+
+        } catch (error) {
+            console.error('Error submitting schedule:', error);
+            alert('Có lỗi xảy ra khi gửi lịch!');
+        }
+    }
+
+    // Helper methods
+    closeModals() {
+        this.slotModal.style.display = 'none';
+        this.submitModal.style.display = 'none';
+    }
+
+    showSubmitModal() {
+        const totalSlots = this.selectedSlots.size;
+        const dateRange = this.getDateRange();
+        
+        document.getElementById('totalSlots').textContent = totalSlots;
+        document.getElementById('dateRange').textContent = dateRange;
+        this.submitModal.style.display = 'block';
+    }
+
+    showStatusBanner(status, message) {
+        this.statusBanner.className = `schedule-status-banner ${status}`;
+        document.getElementById('statusMessage').textContent = message;
+    }
+
+    formatDate(date) {
+        return date.toLocaleDateString('vi-VN', {
+            weekday: 'short',
+            day: '2-digit',
+            month: '2-digit'
+        });
+    }
+
+    formatDateForData(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    generateNextTwoWeeksDates() {
+        const dates = [];
+        const today = new Date(this.currentDate);
+        
+        for (let i = 0; i < 14; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            dates.push(date);
+        }
+        
+        return dates;
     }
 
     navigateWeek(direction) {
         this.currentDate.setDate(this.currentDate.getDate() + (direction * 7));
+        this.generateScheduleGrid();
         this.updateCurrentWeek();
-        this.loadScheduleData();
     }
 
     updateCurrentWeek() {
-        // Update week display
-        const startOfWeek = new Date(this.currentDate);
-        startOfWeek.setDate(this.currentDate.getDate() - this.currentDate.getDay());
+        const startDate = new Date(this.currentDate);
+        const endDate = new Date(this.currentDate);
+        endDate.setDate(endDate.getDate() + 13);
+
+        this.currentWeekElement.textContent = `${this.formatDate(startDate)} - ${this.formatDate(endDate)}`;
+    }
+
+    getDateRange() {
+        const dates = Array.from(this.selectedSlots.keys())
+            .map(key => key.split('-')[0])
+            .sort();
         
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-        this.currentWeekElement.textContent = `Tuần ${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+        if (dates.length === 0) return 'Chưa chọn ngày';
+        
+        return `${dates[0]} đến ${dates[dates.length - 1]}`;
     }
 
-    changeView(view) {
-        // Update active button
-        document.querySelectorAll('.view-options button').forEach(button => {
-            button.classList.toggle('active', button.dataset.view === view);
-        });
-
-        // Implement view change logic
-        if (view === 'month') {
-            // Switch to month view
-        } else {
-            // Switch to week view
-        }
+    findSlotElement(date, time) {
+        return document.querySelector(`[data-date="${date}"][data-time="${time}"]`);
     }
 
-    checkLastUpdate() {
-        // Check last update date and show notification if needed
-        const lastUpdate = localStorage.getItem('lastScheduleUpdate');
-        if (!lastUpdate || this.isDaysAgo(new Date(lastUpdate), 30)) {
-            this.showUpdateReminder();
-        }
-    }
-
-    isDaysAgo(date, days) {
-        const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays >= days;
-    }
-
-    showUpdateReminder() {
-        this.notificationPanel.style.display = 'block';
-    }
-
-    async saveSchedule() {
-        try {
-            // Save all schedule changes
-            await this.saveScheduleToServer();
-            localStorage.setItem('lastScheduleUpdate', new Date().toISOString());
-            this.notificationPanel.style.display = 'none';
-        } catch (error) {
-            console.error('Error saving schedule:', error);
-            alert('Không thể lưu lịch. Vui lòng thử lại.');
-        }
-    }
-
-    async saveScheduleToServer() {
-        // Simulate API call to save schedule
-        return new Promise(resolve => {
-            setTimeout(resolve, 1000);
-        });
-    }
-
-    // Hàm định dạng ngày
-    formatDate(dateString) {
-        const dateParts = dateString.split('/');
-        const day = dateParts[0];
-        const month = dateParts[1];
-        const year = dateParts[2];
-        return `${day}/${month}/${year}`; // Hoặc định dạng khác nếu cần
-    }
-
-    async notifyAdmin(slotData) {
-        try {
-            await fetch('/api/schedule/notify-admin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(slotData)
+    generateTimeSlotsForDuration(duration) {
+        this.timeSlots = [];
+        
+        // Buổi sáng (7:00 - 12:00)
+        let currentTime = new Date();
+        currentTime.setHours(7, 0, 0);
+        
+        while (currentTime.getHours() < 12) {
+            const startTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            currentTime.setMinutes(currentTime.getMinutes() + duration);
+            const endTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            this.timeSlots.push({
+                time: `${startTime} - ${endTime}`,
+                period: "Sáng",
+                duration: duration
             });
-        } catch (error) {
-            console.error('Error notifying admin:', error);
+
+            // Thêm 15 phút nghỉ giữa các slot
+            currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+
+        // Buổi chiều (13:30 - 17:45)
+        currentTime.setHours(13, 30, 0);
+        while (currentTime.getHours() < 18) {
+            const startTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            currentTime.setMinutes(currentTime.getMinutes() + duration);
+            const endTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            this.timeSlots.push({
+                time: `${startTime} - ${endTime}`,
+                period: "Chiều",
+                duration: duration
+            });
+
+            currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+
+        // Buổi tối (18:45 - 22:00)
+        currentTime.setHours(18, 45, 0);
+        while (currentTime.getHours() < 22) {
+            const startTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            currentTime.setMinutes(currentTime.getMinutes() + duration);
+            const endTime = currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            this.timeSlots.push({
+                time: `${startTime} - ${endTime}`,
+                period: "Tối",
+                duration: duration
+            });
+
+            currentTime.setMinutes(currentTime.getMinutes() + 15);
         }
     }
 }
 
 // Initialize when DOM is loaded
+let scheduleManager;
 document.addEventListener('DOMContentLoaded', () => {
-    new ScheduleManager();
+    scheduleManager = new ScheduleManager();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const slotModal = document.getElementById("slotModal");
-    const saveSlotButton = document.getElementById("saveSlot");
-    const cancelSlotButton = document.getElementById("cancelSlot");
+// Gọi hàm để tải dữ liệu lịch
+scheduleManager.loadScheduleData();
 
-    // Hàm mở modal
-    function openSlotModal(slotTime, slotDate) {
-        document.getElementById("slotTime").textContent = slotTime;
-        document.getElementById("slotDate").textContent = slotDate;
-        slotModal.style.display = "block";
+// Hàm để phê duyệt hoặc từ chối lịch
+async function handleApproval(teacherId, isApproved) {
+    const reason = isApproved ? null : prompt('Lý do từ chối:');
+    if (!isApproved && !reason) return;
+
+    try {
+        const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+        const updatedSchedules = schedules.map(schedule => {
+            if (schedule.teacherId === teacherId) {
+                return { ...schedule, status: isApproved ? 'approved' : 'rejected', reason };
+            }
+            return schedule;
+        });
+        localStorage.setItem('teacherSchedules', JSON.stringify(updatedSchedules));
+        alert(`Đã ${isApproved ? 'duyệt' : 'từ chối'} lịch thành công!`);
+        scheduleManager.loadScheduleData(); // Tải lại dữ liệu lịch
+    } catch (error) {
+        console.error('Error updating schedule:', error);
     }
+}
 
-    // Hàm lưu thông tin khung giờ
-    saveSlotButton.addEventListener("click", async () => {
-        const status = document.querySelector('input[name="status"]:checked');
-        if (!status) {
-            alert('Vui lòng chọn trạng thái.');
-            return;
-        }
+// Thêm sự kiện cho nút "Lưu" trong modal khung giờ
+document.getElementById('saveSlot').addEventListener('click', function() {
+    console.log('Nút "Lưu" đã được nhấn'); // Kiểm tra sự kiện
+    const status = document.querySelector('input[name="status"]:checked');
+    if (status) {
         const note = document.getElementById('slotNote').value;
+        console.log('Trạng thái:', status.value); // Kiểm tra giá trị trạng thái
+        console.log('Ghi chú:', note); // Kiểm tra ghi chú
+        // Cập nhật dữ liệu khung giờ ở đây
+        // ... mã cập nhật dữ liệu ...
 
-        try {
-            await saveSlotDetails(); // Giả sử bạn có hàm này để lưu thông tin
-            alert('Đã lưu thông tin khung giờ thành công!');
-            slotModal.style.display = "none";
-            loadScheduleData(); // Cập nhật lại lịch
-        } catch (error) {
-            console.error('Error saving slot details:', error);
-            alert('Không thể lưu thông tin khung giờ. Vui lòng thử lại.');
-        }
-    });
+        // Đóng modal sau khi lưu
+        document.getElementById('slotModal').style.display = 'none';
+    } else {
+        console.error('Không có trạng thái nào được chọn'); // Thông báo lỗi
+    }
+});
 
-    // Hàm hủy
-    cancelSlotButton.addEventListener("click", () => {
-        slotModal.style.display = "none";
-    });
+// Thêm sự kiện cho nút "Xác nhận gửi" trong modal gửi lịch
+document.getElementById('confirmSubmit').addEventListener('click', function() {
+    console.log('Nút "Xác nhận gửi" đã được nhấn'); // Kiểm tra sự kiện
+    const scheduleNote = document.getElementById('scheduleNote').value;
+    console.log('Ghi chú lịch:', scheduleNote); // Kiểm tra ghi chú lịch
+    // Xử lý gửi lịch ở đây
+    // ... mã gửi lịch ...
 
-    // Đóng modal khi nhấn vào dấu 'x'
-    slotModal.querySelector(".close").addEventListener("click", () => {
-        slotModal.style.display = "none";
-    });
+    // Đóng modal sau khi gửi
+    document.getElementById('scheduleSubmitModal').style.display = 'none';
 }); 

@@ -31,6 +31,14 @@ class DashboardManager {
 
             this.renderActivities(activities);
             this.renderNotifications(notifications);
+
+            // Lấy thông tin giáo viên từ sessionStorage
+            const currentTeacher = JSON.parse(sessionStorage.getItem('currentTeacher'));
+            if (currentTeacher && currentTeacher.name) {
+                // Cập nhật tên giáo viên lên giao diện
+                document.getElementById('username').textContent = currentTeacher.name;
+                document.getElementById('username').style.display = 'block'; // Hiển thị tên giáo viên
+            }
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
@@ -119,7 +127,13 @@ class DashboardManager {
     }
 }
 
-// Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new DashboardManager();
-}); 
+// Giả sử bạn có một hàm để lấy thông tin người dùng
+function displayTeacherName(teacherName) {
+    const usernameElement = document.getElementById('username');
+    usernameElement.textContent = teacherName; // Cập nhật tên giáo viên
+    usernameElement.style.display = 'block'; // Hiển thị phần tử
+}
+
+// Gọi hàm này với tên giáo viên khi dữ liệu đã được tải
+const teacherName = "Tên Giáo Viên"; // Thay thế bằng dữ liệu thực tế
+displayTeacherName(teacherName); 
