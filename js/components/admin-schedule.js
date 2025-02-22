@@ -191,12 +191,88 @@ ${schedules.map(schedule => `
     }
 
     async viewScheduleDetail(teacherId) {
+        console.log(`Viewing schedule for teacher ID: ${teacherId}`);
         try {
-            const scheduleDetail = await this.fetchTeacherScheduleDetail(teacherId);
+            // Lấy dữ liệu từ localStorage
+            const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+            const scheduleDetail = schedules.find(schedule => schedule.teacherId === teacherId);
+            
+            if (!scheduleDetail) {
+                throw new Error('Không tìm thấy thông tin lịch');
+            }
+
             this.showScheduleDetailModal(scheduleDetail);
         } catch (error) {
             console.error('Error loading schedule detail:', error);
+            alert('Có lỗi xảy ra khi tải thông tin chi tiết!');
         }
+    }
+
+    showScheduleDetailModal(scheduleDetail) {
+        this.modal.style.display = 'block';
+        
+        // Tạo nội dung chi tiết cho modal
+        this.modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close" onclick="adminSchedule.closeModal()">&times;</span>
+                <h2>Chi tiết lịch trống</h2>
+                
+                <div class="schedule-detail-info">
+                    <div class="info-group">
+                        <p><strong>Giáo viên:</strong> ${scheduleDetail.teacherName}</p>
+                        <p><strong>Email:</strong> ${scheduleDetail.teacherId}</p>
+                        <p><strong>Cập nhật cuối:</strong> ${this.formatDate(scheduleDetail.lastUpdate)}</p>
+                        <p><strong>Số slot trống:</strong> ${scheduleDetail.availableSlots} slots</p>
+                        <p><strong>Trạng thái:</strong> 
+                            <span class="status-badge status-${scheduleDetail.approvalStatus}">
+                                ${this.getApprovalStatusText(scheduleDetail.approvalStatus)}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="schedule-slots">
+                        <h3>Các khung giờ trống</h3>
+                        <div class="slots-list">
+                            ${scheduleDetail.slots ? scheduleDetail.slots.map(slot => `
+                                <div class="slot-item">
+                                    <span class="slot-time">${slot.time}</span>
+                                    <span class="slot-date">${this.formatDate(slot.date)}</span>
+                                </div>
+                            `).join('') : '<p>Không có thông tin khung giờ</p>'}
+                        </div>
+                    </div>
+
+                    ${scheduleDetail.note ? `
+                        <div class="schedule-note">
+                            <h3>Ghi chú</h3>
+                            <p>${scheduleDetail.note}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="action-buttons">
+                        ${scheduleDetail.approvalStatus === 'pending' ? `
+                            <button class="btn-approve" onclick="adminSchedule.approveSchedule('${scheduleDetail.teacherId}')">
+                                <i class="fas fa-check"></i> Duyệt
+                            </button>
+                            <button class="btn-reject" onclick="adminSchedule.rejectSchedule('${scheduleDetail.teacherId}')">
+                                <i class="fas fa-times"></i> Từ chối
+                            </button>
+                        ` : ''}
+                        <button class="btn-close" onclick="adminSchedule.closeModal()">
+                            <i class="fas fa-times"></i> Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        // Thêm sự kiện đóng modal
+        this.modal.querySelector('.close').onclick = () => this.closeModal();
+        // Thêm style cho modal
+        const modalContent = this.modal.querySelector('.modal-content');
+        modalContent.style.maxWidth = '600px';
+        modalContent.style.width = '100%';
+        modalContent.style.maxHeight = '80vh';
+        modalContent.style.overflowY = 'auto';
     }
 
     async sendReminder(teacherId) {
@@ -246,22 +322,28 @@ ${schedules.map(schedule => `
         }
     }
 
+    async loadScheduleData() {
+        try {
+            const schedules = await this.fetchSchedules();
+            this.renderScheduleList(schedules);
+            this.updateStatistics(schedules);
+        } catch (error) {
+            console.error('Error loading schedule data:', error);
+        }
+    }
+
     async approveSchedule(teacherId) {
         try {
-            // Cập nhật UI trước
-            const scheduleItem = this.scheduleList.querySelector(`[data-teacher-id="${teacherId}"]`);
-            if (scheduleItem) {
-                const statusBadge = scheduleItem.querySelector('.status-badge');
-                const actionButtons = scheduleItem.querySelector('.action-buttons');
-                
-                statusBadge.className = 'status-badge status-approved';
-                statusBadge.textContent = 'Đã duyệt';
-                
-                actionButtons.innerHTML = `
-                    <button class="btn-view" onclick="adminSchedule.viewScheduleDetail(${teacherId})">
-                        <i class="fas fa-eye"></i> Xem
-                    </button>
-                `;
+            // Gọi API để cập nhật trạng thái
+            const response = await fetch(`/api/schedule/approve/${teacherId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to approve schedule');
             }
 
             // Cập nhật trong localStorage
@@ -273,12 +355,19 @@ ${schedules.map(schedule => `
                 return schedule;
             });
             localStorage.setItem('teacherSchedules', JSON.stringify(updatedSchedules));
-            
+
+            // Cập nhật UI ngay lập tức
+            const scheduleItem = this.scheduleList.querySelector(`[data-teacher-id="${teacherId}"]`);
+            if (scheduleItem) {
+                const statusBadge = scheduleItem.querySelector('.status-badge');
+                statusBadge.className = 'status-badge status-approved';
+                statusBadge.textContent = 'Đã duyệt';
+            }
+
             alert('Đã duyệt lịch trống thành công!');
         } catch (error) {
             console.error('Error approving schedule:', error);
             alert('Có lỗi xảy ra khi duyệt lịch!');
-            await this.loadScheduleData();
         }
     }
 
@@ -286,25 +375,8 @@ ${schedules.map(schedule => `
         const reason = prompt('Lý do từ chối:');
         if (reason) {
             try {
-                // Cập nhật UI trước
-                const scheduleItem = this.scheduleList.querySelector(`[data-teacher-id="${teacherId}"]`);
-                if (scheduleItem) {
-                    const statusBadge = scheduleItem.querySelector('.status-badge');
-                    const actionButtons = scheduleItem.querySelector('.action-buttons');
-                    
-                    statusBadge.className = 'status-badge status-rejected';
-                    statusBadge.textContent = 'Đã từ chối';
-                    
-                    // Ẩn nút duyệt và từ chối
-                    actionButtons.innerHTML = `
-                        <button class="btn-view" onclick="adminSchedule.viewScheduleDetail(${teacherId})">
-                            <i class="fas fa-eye"></i> Xem
-                        </button>
-                    `;
-                }
-
                 // Gọi API để cập nhật trạng thái
-                await fetch(`/api/schedule/reject/${teacherId}`, {
+                const response = await fetch(`/api/schedule/reject/${teacherId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -312,12 +384,32 @@ ${schedules.map(schedule => `
                     body: JSON.stringify({ reason })
                 });
 
+                if (!response.ok) {
+                    throw new Error('Failed to reject schedule');
+                }
+
+                // Cập nhật trong localStorage
+                const schedules = JSON.parse(localStorage.getItem('teacherSchedules')) || [];
+                const updatedSchedules = schedules.map(schedule => {
+                    if (schedule.teacherId === teacherId) {
+                        return { ...schedule, approvalStatus: 'rejected' };
+                    }
+                    return schedule;
+                });
+                localStorage.setItem('teacherSchedules', JSON.stringify(updatedSchedules));
+
+                // Cập nhật UI ngay lập tức
+                const scheduleItem = this.scheduleList.querySelector(`[data-teacher-id="${teacherId}"]`);
+                if (scheduleItem) {
+                    const statusBadge = scheduleItem.querySelector('.status-badge');
+                    statusBadge.className = 'status-badge status-rejected';
+                    statusBadge.textContent = 'Đã từ chối';
+                }
+
                 alert('Đã từ chối lịch trống!');
             } catch (error) {
                 console.error('Error rejecting schedule:', error);
                 alert('Có lỗi xảy ra khi từ chối lịch!');
-                // Reload lại dữ liệu nếu có lỗi
-                await this.loadScheduleData();
             }
         }
     }
